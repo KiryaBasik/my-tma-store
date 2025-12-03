@@ -2,55 +2,24 @@
 
 import { useState, useRef, MouseEvent } from "react";
 import { ArrowUpRight, Trophy, Download, Star } from "lucide-react";
-import Image from "next/image";
 
-const WEEKLY_APPS = [
-  {
-    id: 1,
-    title: "Tonkeeper",
-    category: "Finance",
-    rating: "4.9",
-    users: "12M+",
-    desc: "The leading wallet for TON ecosystem directly in your pocket.",
-    icon: "bg-blue-500",
-    image: "/icon1.png",
-    isFeatured: true,
-  },
-  {
-    id: 2,
-    title: "Fragment",
-    category: "Marketplace",
-    rating: "4.8",
-    users: "5M+",
-    icon: "bg-indigo-500",
-  },
-  {
-    id: 3,
-    title: "Getgems",
-    category: "NFT",
-    rating: "4.7",
-    users: "3M+",
-    icon: "bg-purple-500",
-  },
-  {
-    id: 4,
-    title: "DeDust",
-    category: "DeFi",
-    rating: "4.6",
-    users: "800K+",
-    icon: "bg-orange-500",
-  },
-  {
-    id: 5,
-    title: "Ston.fi",
-    category: "DEX",
-    rating: "4.8",
-    users: "1.2M+",
-    icon: "bg-cyan-500",
-  },
-];
+// Интерфейс данных с бэкенда
+interface AppData {
+  id: number;
+  title: string;
+  category: string;
+  rating: number;
+  users_count: string;
+  description: string;
+  icon: string;
+  is_weekly: boolean;
+}
 
-export default function WeeklyFeatured() {
+export default function WeeklyFeatured({
+  initialApps,
+}: {
+  initialApps: AppData[];
+}) {
   const divRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [opacity, setOpacity] = useState(0);
@@ -64,6 +33,27 @@ export default function WeeklyFeatured() {
 
   const handleMouseEnter = () => setOpacity(1);
   const handleMouseLeave = () => setOpacity(0);
+
+  // Функция для исправления ссылок на картинки
+  const getIconUrl = (url: string) => {
+    if (!url) return null;
+    if (url.startsWith("http")) return url;
+    return `http://127.0.0.1:8000${url}`;
+  };
+
+  // Если данных нет, ничего не рендерим (или можно вернуть заглушку)
+  if (!initialApps || initialApps.length === 0) {
+    return (
+      <section className="py-12 px-4 text-center text-gray-500">
+        No weekly apps selected yet. Go to Admin Panel.
+      </section>
+    );
+  }
+
+  // Первое приложение - большое (Featured)
+  const mainApp = initialApps[0];
+  // Остальные (до 4 штук) - маленькие
+  const otherApps = initialApps.slice(1, 5);
 
   return (
     <section className="py-12 px-4">
@@ -97,6 +87,7 @@ export default function WeeklyFeatured() {
           }}
         />
 
+        {/* БОЛЬШАЯ КАРТОЧКА (#1) */}
         <div className="md:col-span-2 relative group overflow-hidden rounded-[2rem] bg-gray-100 dark:bg-[#1a1d24] border border-gray-200 dark:border-white/5 p-8 flex flex-col justify-between min-h-[400px]">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
@@ -106,10 +97,10 @@ export default function WeeklyFeatured() {
                 #1 Editor's Choice
               </span>
               <h3 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white leading-tight">
-                {WEEKLY_APPS[0].title}
+                {mainApp.title}
               </h3>
-              <p className="text-gray-600 dark:text-gray-300 text-lg max-w-md">
-                {WEEKLY_APPS[0].desc}
+              <p className="text-gray-600 dark:text-gray-300 text-lg max-w-md line-clamp-3">
+                {mainApp.description}
               </p>
             </div>
           </div>
@@ -121,33 +112,49 @@ export default function WeeklyFeatured() {
             </button>
             <div className="flex items-center gap-1 text-sm font-bold text-gray-500 dark:text-gray-400">
               <Star className="text-yellow-400 fill-yellow-400" size={16} />
-              {WEEKLY_APPS[0].rating} Rating
+              {mainApp.rating} Rating
             </div>
           </div>
 
-          <div className="absolute right-[-20px] bottom-[-20px] md:right-[-40px] md:bottom-[-40px] w-64 h-64 md:w-96 md:h-96 rotate-[-12deg] group-hover:rotate-[-6deg] group-hover:scale-105 transition-all duration-500 ease-out z-0">
-            <div
-              className={`w-full h-full ${WEEKLY_APPS[0].icon} rounded-[3rem] shadow-2xl opacity-90 blur-sm group-hover:blur-0 flex items-center justify-center`}
-            >
-              <span className="text-9xl text-white/20 font-black">T</span>
+          <div className="absolute right-[-20px] bottom-[-20px] md:right-[-40px] md:bottom-[-40px] w-64 h-64 md:w-96 md:h-96 rotate-[-12deg] group-hover:rotate-[-6deg] group-hover:scale-105 transition-all duration-500 ease-out z-0 opacity-90 blur-sm group-hover:blur-0">
+            {/* Отображение логотипа */}
+            <div className="w-full h-full rounded-[3rem] shadow-2xl overflow-hidden bg-gray-800 flex items-center justify-center">
+              {mainApp.icon ? (
+                <img
+                  src={getIconUrl(mainApp.icon)!}
+                  alt={mainApp.title}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="text-9xl text-white/20 font-black">
+                  {mainApp.title[0]}
+                </span>
+              )}
             </div>
           </div>
         </div>
 
+        {/* СПИСОК ОСТАЛЬНЫХ */}
         <div className="grid grid-cols-1 gap-4 h-full">
-          {WEEKLY_APPS.slice(1).map((app) => (
+          {otherApps.map((app) => (
             <div
               key={app.id}
               className="relative group bg-white dark:bg-[#1a1d24] border border-gray-200 dark:border-white/5 rounded-[1.5rem] p-5 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer"
             >
               <div className="flex items-center gap-4">
-                <div
-                  className={`w-14 h-14 ${app.icon} rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-md group-hover:scale-110 transition-transform`}
-                >
-                  {app.title[0]}
+                <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-md group-hover:scale-110 transition-transform bg-gray-800 flex items-center justify-center text-white">
+                  {app.icon ? (
+                    <img
+                      src={getIconUrl(app.icon)!}
+                      alt={app.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="font-bold text-xl">{app.title[0]}</span>
+                  )}
                 </div>
                 <div>
-                  <h4 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-blue-500 transition-colors">
+                  <h4 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-blue-500 transition-colors line-clamp-1">
                     {app.title}
                   </h4>
                   <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
