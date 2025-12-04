@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import Footer from "@/components/Footer";
+import NextTopLoader from "nextjs-toploader"; // <--- ИМПОРТ
 
 const inter = Inter({ subsets: ["latin", "cyrillic"] });
 
@@ -14,13 +15,11 @@ export const metadata = {
   description: "Best Telegram Mini Apps",
 };
 
-// Меню навигации.
-// href должен начинаться со слэша.
 const NAV_ITEMS = [
   { name: "Categories", href: "/categories" },
-  { name: "Marketplace", href: "#" }, // Пока заглушка
-  { name: "Ads", href: "#" }, // Пока заглушка
-  { name: "Sensor", href: "#" }, // Пока заглушка
+  { name: "Marketplace", href: "#" },
+  { name: "Ads", href: "#" },
+  { name: "Sensor", href: "#" },
 ];
 
 export default async function RootLayout({
@@ -30,7 +29,6 @@ export default async function RootLayout({
   children: React.ReactNode;
   params: Promise<{ lang: string }>;
 }) {
-  // Получаем текущий язык (например, "ru" или "en")
   const { lang } = await params;
 
   return (
@@ -40,11 +38,24 @@ export default async function RootLayout({
         className={`${inter.className} min-h-screen bg-background text-foreground antialiased selection:bg-blue-500/30 transition-colors duration-300 flex flex-col`}
       >
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+          {/* ДОБАВЛЯЕМ LOADER СЮДА */}
+          <NextTopLoader
+            color="#3b82f6" // Синий цвет (как у тебя в теме)
+            initialPosition={0.08}
+            crawlSpeed={200}
+            height={3}
+            crawl={true}
+            showSpinner={false} // Спиннер обычно лишний, полоски хватает
+            easing="ease"
+            speed={200}
+            shadow="0 0 10px #3b82f6,0 0 5px #3b82f6"
+          />
+
           <ParallaxBackground />
 
           <header className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl transition-colors duration-300">
+            {/* ... (твой хедер без изменений) ... */}
             <div className="w-full mx-auto px-5 md:px-[100px] xl:px-[240px] h-20 flex items-center justify-between">
-              {/* Логотип: ведет на главную страницу */}
               <Link
                 href={`/${lang}`}
                 className="flex items-center gap-2 cursor-pointer group"
@@ -57,12 +68,10 @@ export default async function RootLayout({
                 </span>
               </Link>
 
-              {/* Навигация */}
               <nav className="hidden lg:flex items-center gap-8 text-sm font-medium text-gray-500 dark:text-gray-400">
                 {NAV_ITEMS.map((item) => (
                   <Link
                     key={item.name}
-                    // ВАЖНО: Добавляем язык в начало пути
                     href={item.href === "#" ? "#" : `/${lang}${item.href}`}
                     className="hover:text-primary transition relative group"
                   >

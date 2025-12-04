@@ -1,46 +1,49 @@
 "use client";
 
 import { Rocket, Sparkles, ChevronRight } from "lucide-react";
+/* eslint-disable-next-line @next/next/no-img-element */
 import Image from "next/image";
 
-// 1. Обновляем интерфейс (заменили icon_url на icon)
 interface HeroAppProps {
   id: number;
   title: string;
   version: string;
   description: string;
-  icon: string; // Новое имя поля!
+  icon: string;
   category: string;
-  users_count: string;
+  users_count_str: string; // Обрати внимание, поле может называться users_count_str или users_count
 }
 
 export default function HeroSection({ app }: { app?: HeroAppProps | null }) {
-  // Функция для "лечения" ссылки на картинку
-  const getIconUrl = (url: string) => {
+  // Лечим ссылку на картинку
+  const getIconUrl = (url: string | null) => {
     if (!url) return null;
-    // Если ссылка начинается с http, оставляем как есть. Если нет - добавляем адрес бэкенда
     if (url.startsWith("http")) return url;
     return `http://127.0.0.1:8000${url}`;
   };
 
+  // Дефолтные данные, если app не пришел
   const data = app
     ? {
-        title: app.title,
+        title: app.title || "Unknown App", // Защита от пустого заголовка
         version: app.version || "1.0",
-        description: app.description,
-        icon: getIconUrl(app.icon), // 2. Используем правильное поле и лечим ссылку
-        users: app.users_count,
+        description: app.description || "No description available.",
+        icon: getIconUrl(app.icon),
+        users: app.users_count_str || "1M+",
         isLive: true,
       }
     : {
-        title: "NotCoin",
+        title: "FindMini",
         version: "2.0",
         description:
-          "The legend returns. Build your squad, mine tokens, and conquer the leaderboard in the new era of tap-to-earn.",
+          "The best catalog of Telegram Mini Apps. Discover, track and use the best bots in the ecosystem.",
         icon: null,
-        users: "2,450,192",
+        users: "---",
         isLive: false,
       };
+
+  // БЕЗОПАСНОЕ ПОЛУЧЕНИЕ ПЕРВОЙ БУКВЫ
+  const firstLetter = data.title && data.title.length > 0 ? data.title[0] : "A";
 
   return (
     <section className="relative mt-6 mb-12 md:mt-10 md:mb-20 w-full max-w-[1400px] mx-auto px-4 perspective-1000">
@@ -74,7 +77,7 @@ export default function HeroSection({ app }: { app?: HeroAppProps | null }) {
                 className="text-blue-600 dark:text-blue-400 animate-pulse"
               />
               <span className="text-[10px] md:text-xs font-bold text-blue-700 dark:text-blue-100 tracking-[0.2em] uppercase">
-                {data.isLive ? "Featured Now" : "App of the Week"}
+                {data.isLive ? "Featured Now" : "Welcome"}
               </span>
             </div>
 
@@ -110,28 +113,25 @@ export default function HeroSection({ app }: { app?: HeroAppProps | null }) {
             </div>
           </div>
 
-          {/* ПРАВАЯ ЧАСТЬ: 3D ПРЕВЬЮ */}
+          {/* ПРАВАЯ ЧАСТЬ: ЛОГОТИП */}
           <div className="relative w-full aspect-video lg:aspect-square max-h-[300px] md:max-h-[450px] flex items-center justify-center perspective-1000 mt-4 lg:mt-0">
             <div className="relative w-full h-full bg-gray-100 dark:bg-[#13161c] rounded-[2rem] md:rounded-[2.5rem] border border-gray-200 dark:border-white/5 overflow-hidden group-hover:rotate-y-[-5deg] group-hover:rotate-x-[5deg] transition-transform duration-500 shadow-2xl dark:shadow-black/50">
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-transparent to-gray-200/50 dark:to-black/80">
-                {/* Круги */}
                 <div className="absolute w-[200px] md:w-[350px] h-[200px] md:h-[350px] border border-gray-300 dark:border-white/5 rounded-full animate-[spin_20s_linear_infinite]" />
                 <div className="absolute w-[150px] md:w-[250px] h-[150px] md:h-[250px] border border-gray-300 dark:border-white/5 rounded-full animate-[spin_25s_linear_infinite_reverse] border-dashed" />
 
-                {/* ЛОГОТИП */}
                 <div className="z-10 text-center transform group-hover:scale-110 transition-transform duration-500">
                   <div className="w-24 h-24 md:w-32 md:h-32 bg-blue-600 rounded-2xl md:rounded-3xl mx-auto mb-4 md:mb-6 flex items-center justify-center shadow-lg shadow-blue-600/30 text-white overflow-hidden relative">
                     {data.icon ? (
-                      // Используем обычный img для внешних ссылок
-                      /* eslint-disable-next-line @next/next/no-img-element */
                       <img
                         src={data.icon}
                         alt={data.title}
                         className="w-full h-full object-cover"
                       />
                     ) : (
+                      // Используем безопасную первую букву
                       <span className="font-black text-2xl md:text-4xl">
-                        {data.title[0]}
+                        {firstLetter}
                       </span>
                     )}
                   </div>
@@ -140,29 +140,10 @@ export default function HeroSection({ app }: { app?: HeroAppProps | null }) {
                   </div>
                 </div>
               </div>
-
-              <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/30 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-            </div>
-
-            {/* Плашка статистики */}
-            <div className="absolute -bottom-4 -left-4 md:bottom-8 md:-left-8 bg-white dark:bg-[#1a1d24] border border-gray-200 dark:border-white/10 px-4 py-3 md:px-6 md:py-4 rounded-2xl flex items-center gap-3 md:gap-4 shadow-xl transform group-hover:translate-x-4 group-hover:-translate-y-4 transition-transform duration-500 delay-100 hidden sm:flex">
-              <div className="relative">
-                <div className="w-3 h-3 rounded-full bg-green-500 animate-ping absolute inset-0 opacity-75" />
-                <div className="w-3 h-3 rounded-full bg-green-500 relative" />
-              </div>
-              <div>
-                <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">
-                  Active Users
-                </p>
-                <p className="text-gray-900 dark:text-white font-bold text-base md:text-lg leading-none">
-                  {data.users}
-                </p>
-              </div>
             </div>
           </div>
         </div>
       </div>
-
       <style jsx>{`
         @keyframes shimmer {
           100% {
