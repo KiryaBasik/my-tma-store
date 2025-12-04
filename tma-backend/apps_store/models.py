@@ -1,7 +1,13 @@
 from django.db import models
 
 class Category(models.Model):
+    # Техническое имя (для админки и слагов)
     name = models.CharField(max_length=100, verbose_name="Название (Техническое)")
+    
+    # Переводы
+    name_en = models.CharField(max_length=100, verbose_name="Name (EN)", blank=True)
+    name_ru = models.CharField(max_length=100, verbose_name="Название (RU)", blank=True)
+    
     slug = models.SlugField(unique=True)
     icon_emoji = models.CharField(max_length=10, blank=True)
     color_theme = models.CharField(max_length=20, default='blue')
@@ -15,7 +21,14 @@ class Category(models.Model):
 
 class SubCategory(models.Model):
     parent_category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='subcategories')
+    
+    # Техническое имя
     name = models.CharField(max_length=100)
+    
+    # Переводы
+    name_en = models.CharField(max_length=100, verbose_name="Name (EN)", blank=True)
+    name_ru = models.CharField(max_length=100, verbose_name="Название (RU)", blank=True)
+    
     slug = models.SlugField()
     icon_emoji = models.CharField(max_length=10, blank=True)
 
@@ -25,7 +38,6 @@ class SubCategory(models.Model):
     class Meta:
         verbose_name = "Подкатегория"
         verbose_name_plural = "Подкатегории"
-
 class TelegramApp(models.Model):
     # Технические поля
     username = models.CharField(max_length=100, unique=True)

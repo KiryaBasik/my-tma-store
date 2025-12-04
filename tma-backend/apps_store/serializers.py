@@ -42,38 +42,37 @@ class TelegramAppSerializer(serializers.ModelSerializer):
 class SubCategorySerializer(serializers.ModelSerializer):
     apps = serializers.SerializerMethodField()
     count = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField() # <-- Добавляем динамическое поле
 
     class Meta:
         model = SubCategory
         fields = ['name', 'slug', 'icon_emoji', 'count', 'apps']
 
-    def get_apps(self, obj):
-        # Получаем язык, чтобы в превью (4 иконки) тоже были правильные названия
+    def get_name(self, obj):
+        # Логика выбора языка
         request = self.context.get('request')
         lang = request.query_params.get('lang', 'en') if request else 'en'
+        
+        if lang == 'ru' and obj.name_ru:
+            return obj.name_ru
+        return obj.name_en or obj.name
 
-        # Берем первые 4 приложения
+    def get_apps(self, obj):
+        # (Тут код остается старый, он уже правильный)
+        request = self.context.get('request')
+        lang = request.query_params.get('lang', 'en') if request else 'en'
         apps = obj.apps.all()[:4]
         data = []
         for app in apps:
-            # Формируем ссылку на иконку
-            icon_url = None
-            if app.icon:
-                if request:
-                    icon_url = request.build_absolute_uri(app.icon.url)
-                else:
-                    icon_url = app.icon.url
+            # Сборка иконки...
+            icon_url = app.icon.url if app.icon else None
+            if icon_url and request:
+                icon_url = request.build_absolute_uri(icon_url)
             
-            # Выбираем правильный заголовок для превью
-            if lang == 'ru' and app.title_ru:
-                title = app.title_ru
-            else:
-                title = app.title_en or app.title
-
-            data.append({
-                "title": title,
-                "icon": icon_url
-            })
+            # Выбор названия приложения
+            title = app.title_ru if (lang == 'ru' and app.title_ru) else (app.title_en or app.title)
+            
+            data.append({"title": title, "icon": icon_url})
         return data
 
     def get_count(self, obj):
@@ -82,21 +81,42 @@ class SubCategorySerializer(serializers.ModelSerializer):
 # 3. Сериализатор для Категорий (включает в себя подкатегории)
 class CategorySerializer(serializers.ModelSerializer):
     subcategories = SubCategorySerializer(many=True, read_only=True)
+    name = serializers.SerializerMethodField() # <-- Динамическое имя
     description = serializers.SerializerMethodField()
 
     class Meta:
         model = Category
         fields = ['id', 'name', 'description', 'slug', 'icon_emoji', 'color_theme', 'subcategories']
     
+    def get_name(self, obj):
+        request = self.context.get('request')
+        lang = request.query_params.get('lang', 'en') if request else 'en'
+        
+        if lang == 'ru' and obj.name_ru:
+            return obj.name_ru
+        return obj.name_en or obj.name
+
     def get_description(self, obj):
-        # Если в модели Category тоже появятся переводы, здесь можно добавить логику
-        return f"Explore best {obj.name} apps."
+        # Можно и описание перевести, если добавить поля в модель
+        request = self.context.get('request')
+        lang = request.query_params.get('lang', 'en') if request else 'en'
+        name = self.get_name(obj)
+        if lang == 'ru':
+            return f"Лучшие приложения в категории {name}"
+        return f"Explore best {name} apps."
 
 # 4. Сериализатор для детальной страницы раздела
 class SubCategoryDetailSerializer(serializers.ModelSerializer):
-    # Включаем полный список приложений через "Умный" сериализатор
     apps = TelegramAppSerializer(many=True, read_only=True)
+    name = serializers.SerializerMethodField() # <-- Тоже переводим
 
     class Meta:
         model = SubCategory
         fields = ['id', 'name', 'slug', 'icon_emoji', 'apps']
+
+    def get_name(self, obj):
+        request = self.context.get('request')
+        lang = request.query_params.get('lang', 'en') if request else 'en'
+        if lang == 'ru' and obj.name_ru:
+            return obj.name_ru
+        return obj.name_en or obj.name

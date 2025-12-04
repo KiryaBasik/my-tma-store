@@ -1,34 +1,66 @@
 from rest_framework import generics
-from .models import TelegramApp, Category, SubCategory  # <-- ВАЖНО: Добавлен SubCategory
+from django.db.models import Q
+from .models import TelegramApp, Category, SubCategory
 from .serializers import (
     TelegramAppSerializer, 
     CategorySerializer, 
-    SubCategoryDetailSerializer # <-- Убедись, что этот сериализатор есть в serializers.py
+    SubCategoryDetailSerializer
 )
 
-# 1. API для получения ОДНОГО приложения для Hero секции
-class HeroAppView(generics.RetrieveAPIView):
+# 1. Hero: Список, без пагинации (чтобы отдать чистый массив)
+class HeroAppView(generics.ListAPIView):
     serializer_class = TelegramAppSerializer
-
-    def get_object(self):
-        # Берем первое попавшееся, у которого стоит галочка is_hero
-        return TelegramApp.objects.filter(is_hero=True).first()
-
-# 2. API для получения списка "Приложения недели"
-class WeeklyAppsView(generics.ListAPIView):
-    serializer_class = TelegramAppSerializer
+    pagination_class = None # <--- ВАЖНО! Отключает { count: ... }
 
     def get_queryset(self):
-        # Возвращаем только те, где is_weekly = True
+        return TelegramApp.objects.filter(is_hero=True)
+
+# 2. Weekly: Тоже отключаем пагинацию
+class WeeklyAppsView(generics.ListAPIView):
+    serializer_class = TelegramAppSerializer
+    pagination_class = None # <--- ВАЖНО!
+
+    def get_queryset(self):
         return TelegramApp.objects.filter(is_weekly=True).order_by('-rating')
 
-# 3. API для получения списка всех категорий
+# 3. Top Apps (Приложения дня): Тоже отключаем
+class TopAppsView(generics.ListAPIView):
+    serializer_class = TelegramAppSerializer
+    pagination_class = None # <--- ВАЖНО!
+
+    def get_queryset(self):
+        return TelegramApp.objects.filter(is_hero=False).order_by('-rating')[:8]
+
+# 4. Категории: Тоже отключаем
 class CategoryListView(generics.ListAPIView):
     queryset = Category.objects.prefetch_related('subcategories__apps').all()
     serializer_class = CategorySerializer
+    pagination_class = None # <--- ВАЖНО!
 
-# 4. API для детальной страницы раздела (например, /category/tap-to-earn)
+# 5. Детальная категория
 class SubCategoryDetailView(generics.RetrieveAPIView):
     queryset = SubCategory.objects.all()
     serializer_class = SubCategoryDetailSerializer
     lookup_field = 'slug'
+
+# 6. Поиск
+class SearchAppsView(generics.ListAPIView):
+    serializer_class = TelegramAppSerializer
+    pagination_class = None # <--- ВАЖНО!
+
+    def get_queryset(self):
+        query = self.request.query_params.get('q', '')
+        if not query:
+            return TelegramApp.objects.none()
+        
+        return TelegramApp.objects.filter(
+            Q(title_en__icontains=query) | 
+            Q(title_ru__icontains=query) | 
+            Q(username__icontains=query) |
+            Q(subcategory__name__icontains=query) |
+            Q(subcategory__name_en__icontains=query) |
+            Q(subcategory__name_ru__icontains=query) |
+            Q(subcategory__parent_category__name__icontains=query) |
+            Q(subcategory__parent_category__name_en__icontains=query) |
+            Q(subcategory__parent_category__name_ru__icontains=query)
+        ).distinct()

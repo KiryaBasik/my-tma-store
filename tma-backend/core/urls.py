@@ -20,6 +20,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import RedirectView
 from apps_store.views import HeroAppView, WeeklyAppsView, CategoryListView, SubCategoryDetailView # <-- Импорт
+from apps_store.views import SearchAppsView
 
 urlpatterns = [
     path('', RedirectView.as_view(url='/admin/', permanent=False)),
@@ -31,6 +32,7 @@ urlpatterns = [
     # Новая ссылка для категорий:
     path('api/categories/', CategoryListView.as_view()),
     path('api/subcategory/<slug:slug>/', SubCategoryDetailView.as_view()), # <-- Новый путь
+    path('api/search/', SearchAppsView.as_view()), # <-- Новый путь
 ]
 
 if settings.DEBUG:

@@ -3,15 +3,15 @@ from .models import TelegramApp, Category, SubCategory
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'slug', 'color_theme', 'icon_emoji')
-    prepopulated_fields = {'slug': ('name',)} # Авто-заполнение слага
+    list_display = ('name', 'name_ru', 'slug', 'color_theme') # Видно RU название
+    prepopulated_fields = {'slug': ('name',)} 
 
 @admin.register(SubCategory)
 class SubCategoryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'parent_category', 'slug')
+    list_display = ('name', 'name_ru', 'parent_category')
     list_filter = ('parent_category',)
     prepopulated_fields = {'slug': ('name',)}
-
+    
 @admin.register(TelegramApp)
 class TelegramAppAdmin(admin.ModelAdmin):
     # Исправили 'category' на 'subcategory'
@@ -20,6 +20,6 @@ class TelegramAppAdmin(admin.ModelAdmin):
     # Исправили фильтр
     list_filter = ('subcategory', 'is_hero', 'is_weekly')
     
-    search_fields = ('title', 'username')
+    search_fields = ('title_en', 'title_ru', 'username')
     
     list_editable = ('is_hero', 'is_weekly', 'rating')
