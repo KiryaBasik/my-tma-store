@@ -1,0 +1,117 @@
+[
+  {
+    "category": "Games",
+    "subcategory": "Tap-to-Earn",
+    "apps": [
+      {
+        "title": "Notcoin",
+        "username": "notcoin_bot",
+        "rating": 5.0,
+        "users": "40M+"
+      },
+      {
+        "title": "Hamster Kombat",
+        "username": "hamster_kombat_bot",
+        "rating": 4.9,
+        "users": "100M+"
+      },
+      {
+        "title": "TapSwap",
+        "username": "tapswap_bot",
+        "rating": 4.7,
+        "users": "20M+"
+      },
+      {
+        "title": "Yescoin",
+        "username": "theyescoin_bot",
+        "rating": 4.6,
+        "users": "10M+"
+      }
+    ]
+  },
+  {
+    "category": "Games",
+    "subcategory": "RPG & Strategy",
+    "apps": [
+      {
+        "title": "Catizen",
+        "username": "catizenbot",
+        "rating": 4.8,
+        "users": "15M+"
+      },
+      {
+        "title": "X Empire",
+        "username": "empirebot",
+        "rating": 4.5,
+        "users": "5M+"
+      },
+      {
+        "title": "MemeFi",
+        "username": "memefi_coin_bot",
+        "rating": 4.6,
+        "users": "8M+"
+      }
+    ]
+  },
+  {
+    "category": "Crypto & Web3",
+    "subcategory": "Wallets",
+    "apps": [
+      {
+        "title": "Wallet",
+        "username": "wallet",
+        "rating": 4.9,
+        "users": "50M+"
+      },
+      {
+        "title": "Tonkeeper",
+        "username": "tonkeeper",
+        "rating": 4.8,
+        "users": "10M+"
+      },
+      {
+        "title": "MyTonWallet",
+        "username": "mytonwalletbot",
+        "rating": 4.7,
+        "users": "2M+"
+      }
+    ]
+  },
+  {
+    "category": "Crypto & Web3",
+    "subcategory": "Exchanges",
+    "apps": [
+      { "title": "Blum", "username": "blum", "rating": 4.9, "users": "30M+" },
+      {
+        "title": "Ston.fi",
+        "username": "stonfibot",
+        "rating": 4.6,
+        "users": "1M+"
+      },
+      {
+        "title": "xRocket",
+        "username": "xrocket",
+        "rating": 4.7,
+        "users": "3M+"
+      }
+    ]
+  },
+  {
+    "category": "Social & Utility",
+    "subcategory": "Dating",
+    "apps": [
+      {
+        "title": "Tinder (Unofficial)",
+        "username": "leomatchbot",
+        "rating": 4.2,
+        "users": "5M+"
+      },
+      {
+        "title": "Datecoin",
+        "username": "datecoin_bot",
+        "rating": 4.0,
+        "users": "500K+"
+      }
+    ]
+  }
+]
