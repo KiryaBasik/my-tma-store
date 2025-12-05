@@ -1,13 +1,17 @@
 import CategoriesHero from "@/components/categories/CategoriesHero";
 import CategorySection from "@/components/categories/CategorySection";
-// Иконки можно мапить, но пока используем эмодзи с бэкенда
+import { getDictionary } from "@/app/dictionaries";
 
-// Функция получения данных
-async function getCategories() {
+// Функция получения данных С ЯЗЫКОМ
+async function getCategories(lang: string) {
   try {
-    const res = await fetch("http://127.0.0.1:8000/api/categories/", {
-      cache: "no-store", // Чтобы видеть свежие данные при обновлении
-    });
+    // Передаем ?lang=ru или ?lang=en
+    const res = await fetch(
+      `http://127.0.0.1:8000/api/categories/?lang=${lang}`,
+      {
+        cache: "no-store",
+      }
+    );
     if (!res.ok) return [];
     return res.json();
   } catch (error) {
@@ -16,47 +20,57 @@ async function getCategories() {
   }
 }
 
-export default async function CategoriesPage() {
-  const categories = await getCategories();
+export default async function CategoriesPage({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}) {
+  const { lang } = await params;
+  const dict = await getDictionary(lang); // Получаем словарь
+  const categories = await getCategories(lang); // Получаем данные с учетом языка
 
   return (
     <div className="min-h-screen flex flex-col gap-20 pb-20">
-      <CategoriesHero />
+      {/* Передаем словарь в Hero */}
+      <CategoriesHero dict={dict.categories} lang={lang} />
 
       {categories.length === 0 ? (
         <div className="text-center text-gray-500 py-20">
-          Loading categories or database is empty...
+          {dict.categories.empty}
         </div>
       ) : (
         categories.map((cat: any) => (
           <CategorySection
             key={cat.id}
             id={cat.slug}
-            title={cat.name}
+            title={cat.name} // Бэкенд уже должен отдать правильное имя, если мы настроим сериализатор категорий
             description={cat.description}
-            // Эмодзи с бэка используем как иконку
             icon={<span className="text-2xl">{cat.icon_emoji}</span>}
-            // Формируем градиент на основе темы
             color={
-              cat.color_theme === 'blue' ? "from-blue-500 to-cyan-400" :
-              cat.color_theme === 'purple' ? "from-purple-500 to-pink-500" :
-              cat.color_theme === 'green' ? "from-green-400 to-emerald-600" :
-              "from-orange-400 to-yellow-500"
+              cat.color_theme === "blue"
+                ? "from-blue-500 to-cyan-400"
+                : cat.color_theme === "purple"
+                ? "from-purple-500 to-pink-500"
+                : cat.color_theme === "green"
+                ? "from-green-400 to-emerald-600"
+                : "from-orange-400 to-yellow-500"
             }
             bgGlow={
-              cat.color_theme === 'blue' ? "bg-blue-500/20" :
-              cat.color_theme === 'purple' ? "bg-purple-500/20" :
-              cat.color_theme === 'green' ? "bg-green-500/20" :
-              "bg-orange-500/20"
+              cat.color_theme === "blue"
+                ? "bg-blue-500/20"
+                : cat.color_theme === "purple"
+                ? "bg-purple-500/20"
+                : cat.color_theme === "green"
+                ? "bg-green-500/20"
+                : "bg-orange-500/20"
             }
             subcategories={cat.subcategories.map((sub: any) => ({
               name: sub.name,
               count: sub.count,
-              apps: sub.apps, // Бэк возвращает массив названий ["Notcoin", ...]
+              apps: sub.apps,
               icon: sub.icon_emoji || "📁",
               colorTheme: cat.color_theme,
-              // Добавляем slug, чтобы ссылка в карточке знала куда вести (нужно будет обновить CategoryCard)
-              slug: sub.slug 
+              slug: sub.slug,
             }))}
           />
         ))

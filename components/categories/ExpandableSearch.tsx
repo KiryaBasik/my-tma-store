@@ -3,8 +3,14 @@
 import { useState, useRef, useEffect } from "react";
 import { Search, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
 
-function useOnClickOutside(ref: React.RefObject<HTMLElement | null>, handler: (event: MouseEvent | TouchEvent) => void) {
+// ... (useOnClickOutside оставляем как есть) ...
+function useOnClickOutside(
+  ref: React.RefObject<HTMLElement | null>,
+  handler: (event: MouseEvent | TouchEvent) => void
+) {
+  // ... тот же код ...
   useEffect(() => {
     const listener = (event: MouseEvent | TouchEvent) => {
       if (!ref.current || ref.current.contains(event.target as Node)) {
@@ -21,23 +27,44 @@ function useOnClickOutside(ref: React.RefObject<HTMLElement | null>, handler: (e
   }, [ref, handler]);
 }
 
-export default function ExpandableSearch() {
+interface SearchProps {
+  placeholder: string;
+  lang: string;
+}
+
+export default function ExpandableSearch({ placeholder, lang }: SearchProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [query, setQuery] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
 
   useOnClickOutside(containerRef, () => setIsExpanded(false));
 
   const handleClick = () => {
     if (!isExpanded) {
-        setIsExpanded(true);
-        setTimeout(() => inputRef.current?.focus(), 100);
+      setIsExpanded(true);
+      setTimeout(() => inputRef.current?.focus(), 100);
+    }
+  };
+
+  const handleSearch = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && query.trim()) {
+      console.log("Searching for:", query);
+
+      // РАСКОММЕНТИРУЙ ЭТУ СТРОКУ:
+      router.push(`/${lang}/search?q=${encodeURIComponent(query)}`);
+
+      // И можно закрыть поиск после нажатия
+      setIsExpanded(false);
     }
   };
 
   return (
-    // Убрали лишние врапперы, просто контейнер для позиционирования
-    <div className="relative h-16 flex items-center justify-center z-50" ref={containerRef}>
+    <div
+      className="relative h-16 flex items-center justify-center z-50"
+      ref={containerRef}
+    >
       <motion.div
         layout
         onClick={handleClick}
@@ -48,15 +75,20 @@ export default function ExpandableSearch() {
             : "w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-700 rounded-full cursor-pointer hover:scale-105 active:scale-95 border border-white/20 shadow-[0_10px_20px_rgba(37,99,235,0.3)]"
         }`}
       >
-        {/* Контейнер иконки: фиксированная ширина, чтобы иконка всегда была по центру этого квадрата */}
-        <motion.div 
-            layout 
-            className={`flex-shrink-0 flex items-center justify-center h-14 ${isExpanded ? "w-12" : "w-full h-full"}`}
+        <motion.div
+          layout
+          className={`flex-shrink-0 flex items-center justify-center h-14 ${
+            isExpanded ? "w-12" : "w-full h-full"
+          }`}
         >
-           <Search className={`${isExpanded ? "text-blue-500 w-5 h-5" : "text-white w-7 h-7"}`} strokeWidth={2.5} />
+          <Search
+            className={`${
+              isExpanded ? "text-blue-500 w-5 h-5" : "text-white w-7 h-7"
+            }`}
+            strokeWidth={2.5}
+          />
         </motion.div>
 
-        {/* Поле ввода */}
         <AnimatePresence>
           {isExpanded && (
             <motion.div
@@ -68,14 +100,21 @@ export default function ExpandableSearch() {
               <input
                 ref={inputRef}
                 type="text"
-                placeholder="Search..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={handleSearch}
+                placeholder={placeholder}
                 className="bg-transparent border-none outline-none w-full text-lg text-gray-900 dark:text-white placeholder:text-gray-400 h-14"
               />
-              <button 
-                onClick={(e) => { e.stopPropagation(); setIsExpanded(false); }}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsExpanded(false);
+                  setQuery("");
+                }}
                 className="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition text-gray-400 hover:text-gray-900 dark:hover:text-white"
               >
-                  <X size={20} />
+                <X size={20} />
               </button>
             </motion.div>
           )}

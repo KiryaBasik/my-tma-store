@@ -6,7 +6,8 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import Footer from "@/components/Footer";
-import NextTopLoader from "nextjs-toploader"; // <--- ИМПОРТ
+import NextTopLoader from "nextjs-toploader";
+import { getDictionary } from "@/app/dictionaries"; // <--- ИМПОРТ СЛОВАРЯ
 
 const inter = Inter({ subsets: ["latin", "cyrillic"] });
 
@@ -14,13 +15,6 @@ export const metadata = {
   title: "FindMini Clone",
   description: "Best Telegram Mini Apps",
 };
-
-const NAV_ITEMS = [
-  { name: "Categories", href: "/categories" },
-  { name: "Marketplace", href: "#" },
-  { name: "Ads", href: "#" },
-  { name: "Sensor", href: "#" },
-];
 
 export default async function RootLayout({
   children,
@@ -30,6 +24,14 @@ export default async function RootLayout({
   params: Promise<{ lang: string }>;
 }) {
   const { lang } = await params;
+  const dict = await getDictionary(lang); // <--- ПОЛУЧАЕМ СЛОВАРЬ
+
+  const NAV_ITEMS = [
+    { name: dict.navigation.categories, href: "/categories" },
+    { name: dict.navigation.marketplace, href: "#" },
+    { name: dict.navigation.ads, href: "#" },
+    { name: dict.navigation.sensor, href: "#" },
+  ];
 
   return (
     <html lang={lang} suppressHydrationWarning>
@@ -38,14 +40,13 @@ export default async function RootLayout({
         className={`${inter.className} min-h-screen bg-background text-foreground antialiased selection:bg-blue-500/30 transition-colors duration-300 flex flex-col`}
       >
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-          {/* ДОБАВЛЯЕМ LOADER СЮДА */}
           <NextTopLoader
-            color="#3b82f6" // Синий цвет (как у тебя в теме)
+            color="#3b82f6"
             initialPosition={0.08}
             crawlSpeed={200}
             height={3}
             crawl={true}
-            showSpinner={false} // Спиннер обычно лишний, полоски хватает
+            showSpinner={false}
             easing="ease"
             speed={200}
             shadow="0 0 10px #3b82f6,0 0 5px #3b82f6"
@@ -54,7 +55,6 @@ export default async function RootLayout({
           <ParallaxBackground />
 
           <header className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl transition-colors duration-300">
-            {/* ... (твой хедер без изменений) ... */}
             <div className="w-full mx-auto px-5 md:px-[100px] xl:px-[240px] h-20 flex items-center justify-between">
               <Link
                 href={`/${lang}`}
@@ -86,7 +86,7 @@ export default async function RootLayout({
                 <ThemeSwitcher />
 
                 <button className="hidden sm:block bg-primary hover:bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-bold shadow-lg shadow-blue-500/20 transition-all transform hover:scale-105 active:scale-95 ml-2">
-                  + Submit
+                  {dict.navigation.submit}
                 </button>
               </div>
             </div>
@@ -96,7 +96,8 @@ export default async function RootLayout({
             {children}
           </main>
 
-          <Footer />
+          {/* Передаем словарь в футер */}
+          <Footer dict={dict.footer} />
         </ThemeProvider>
       </body>
     </html>

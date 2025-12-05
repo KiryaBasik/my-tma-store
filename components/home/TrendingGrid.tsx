@@ -3,7 +3,6 @@
 import { useState, useRef, MouseEvent } from "react";
 import { ArrowUpRight, Trophy, Download, Star } from "lucide-react";
 
-// Интерфейс данных с бэкенда
 interface AppData {
   id: number;
   title: string;
@@ -15,10 +14,13 @@ interface AppData {
   is_weekly: boolean;
 }
 
+// Принимаем dict
 export default function WeeklyFeatured({
   initialApps,
+  dict,
 }: {
   initialApps: AppData[];
+  dict: any;
 }) {
   const divRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -34,25 +36,17 @@ export default function WeeklyFeatured({
   const handleMouseEnter = () => setOpacity(1);
   const handleMouseLeave = () => setOpacity(0);
 
-  // Функция для исправления ссылок на картинки
   const getIconUrl = (url: string) => {
     if (!url) return null;
     if (url.startsWith("http")) return url;
     return `http://127.0.0.1:8000${url}`;
   };
 
-  // Если данных нет, ничего не рендерим (или можно вернуть заглушку)
-  if (!initialApps || initialApps.length === 0) {
-    return (
-      <section className="py-12 px-4 text-center text-gray-500">
-        No weekly apps selected yet. Go to Admin Panel.
-      </section>
-    );
+  if (!initialApps || initialApps.length === 0 || !dict) {
+    return null;
   }
 
-  // Первое приложение - большое (Featured)
   const mainApp = initialApps[0];
-  // Остальные (до 4 штук) - маленькие
   const otherApps = initialApps.slice(1, 5);
 
   return (
@@ -60,15 +54,13 @@ export default function WeeklyFeatured({
       <div className="flex items-end justify-between mb-8">
         <div>
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Apps of the Week
+            {dict.title}
           </h2>
-          <p className="text-gray-500 dark:text-gray-400">
-            Curated selection of the best performing apps
-          </p>
+          <p className="text-gray-500 dark:text-gray-400">{dict.subtitle}</p>
         </div>
         <div className="hidden sm:flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 rounded-full text-sm font-bold">
           <Trophy size={16} />
-          <span>Weekly Selection</span>
+          <span>{dict.weeklyBadge}</span>
         </div>
       </div>
 
@@ -94,7 +86,7 @@ export default function WeeklyFeatured({
           <div className="relative z-10 flex items-start justify-between">
             <div className="flex flex-col gap-4">
               <span className="w-fit px-3 py-1 rounded-full bg-white dark:bg-white/10 text-xs font-bold uppercase tracking-wider text-gray-900 dark:text-white border border-gray-200 dark:border-white/5 shadow-sm">
-                #1 Editor's Choice
+                #1 {dict.editorChoice}
               </span>
               <h3 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white leading-tight">
                 {mainApp.title}
@@ -108,16 +100,15 @@ export default function WeeklyFeatured({
           <div className="relative z-10 mt-8 flex items-center gap-4">
             <button className="flex items-center gap-2 bg-gray-900 dark:bg-white text-white dark:text-black px-6 py-3 rounded-xl font-bold hover:scale-105 transition-transform active:scale-95 shadow-lg shadow-blue-500/20">
               <Download size={20} />
-              Install Now
+              {dict.install}
             </button>
             <div className="flex items-center gap-1 text-sm font-bold text-gray-500 dark:text-gray-400">
               <Star className="text-yellow-400 fill-yellow-400" size={16} />
-              {mainApp.rating} Rating
+              {mainApp.rating} {dict.rating}
             </div>
           </div>
 
           <div className="absolute right-[-20px] bottom-[-20px] md:right-[-40px] md:bottom-[-40px] w-64 h-64 md:w-96 md:h-96 rotate-[-12deg] group-hover:rotate-[-6deg] group-hover:scale-105 transition-all duration-500 ease-out z-0 opacity-90 blur-sm group-hover:blur-0">
-            {/* Отображение логотипа */}
             <div className="w-full h-full rounded-[3rem] shadow-2xl overflow-hidden bg-gray-800 flex items-center justify-center">
               {mainApp.icon ? (
                 <img
