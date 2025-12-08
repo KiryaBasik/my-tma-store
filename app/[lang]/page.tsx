@@ -3,43 +3,29 @@ import TopLists from "@/components/home/TopLists";
 import StatsSection from "@/components/home/StatsSection";
 import TrendingGrid from "@/components/home/TrendingGrid";
 import NewsSection from "@/components/home/NewsSection";
-
-// ИСПРАВЛЕНИЕ 1: Правильный путь (один уровень вверх, так как файл в папке app)
 import { getDictionary } from "../dictionaries";
 
-// --- Функция загрузки Hero ---
-async function getHeroApps() {
+// Универсальная функция fetch с защитой от ошибок
+async function fetchAPI(endpoint: string) {
   try {
-    const res = await fetch("http://127.0.0.1:8000/api/hero/", {
+    const res = await fetch(`http://localhost:8000/api/${endpoint}`, {
       cache: "no-store",
     });
-    if (!res.ok) return [];
-    return res.json();
-  } catch (error) {
-    return [];
-  }
-}
 
-async function getTopApps() {
-  try {
-    const res = await fetch("http://127.0.0.1:8000/api/apps/", {
-      cache: "no-store",
-    });
     if (!res.ok) return [];
-    return res.json();
-  } catch (error) {
-    return [];
-  }
-}
 
-async function getWeeklyApps() {
-  try {
-    const res = await fetch("http://127.0.0.1:8000/api/weekly/", {
-      cache: "no-store",
-    });
-    if (!res.ok) return [];
-    return res.json();
+    const data = await res.json();
+
+    // Обработка пагинации DRF
+    if (data && data.results && Array.isArray(data.results)) {
+      return data.results;
+    }
+    if (Array.isArray(data)) {
+      return data;
+    }
+    return [];
   } catch (error) {
+    console.error(`Error fetching ${endpoint}:`, error);
     return [];
   }
 }
@@ -51,27 +37,24 @@ export default async function Home({
 }) {
   const { lang } = await params;
 
-  // 2. Загружаем данные И словарь параллельно
-  const [heroApps, topApps, weeklyApps, dict] = await Promise.all([
-    getHeroApps(),
-    getTopApps(),
-    getWeeklyApps(),
-    getDictionary(lang), // Получаем переводы для текущего языка
+  // Запрашиваем ВСЕ данные параллельно
+  const [heroApps, topApps, weeklyApps, newsData, dict] = await Promise.all([
+    fetchAPI(`hero/?lang=${lang}`),
+    fetchAPI(`apps/?lang=${lang}`),
+    fetchAPI(`weekly/?lang=${lang}`),
+    fetchAPI(`news/?lang=${lang}`), // <--- ЗАГРУЖАЕМ НОВОСТИ
+    getDictionary(lang),
   ]);
 
   return (
     <div className="space-y-16">
-      {/* HeroSection берет тексты из базы данных, ему dict обычно не нужен */}
       <HeroSection apps={heroApps} />
-
-      {/* ИСПРАВЛЕНИЕ 2: Передаем dict во все компоненты, которые ругались */}
       <TopLists initialApps={topApps} dict={dict} />
-
       <StatsSection dict={dict} />
-
       <TrendingGrid initialApps={weeklyApps} dict={dict} />
 
-      <NewsSection dict={dict} />
+      {/* Передаем новости в компонент */}
+      <NewsSection news={newsData} dict={dict} />
     </div>
   );
 }

@@ -38,7 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'corsheaders', 
+    'corsheaders',
+    'ckeditor', 
+    'ckeditor_uploader', 
     'apps_store',
 ]
 
@@ -133,3 +135,11 @@ MEDIA_URL = '/media/'
 # Папка на диске, куда будут падать файлы
 import os
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+CKEDITOR_UPLOAD_PATH = "uploads/"
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': 'full',
+        'height': 300,
+        'width': '100%',
+    },
+}

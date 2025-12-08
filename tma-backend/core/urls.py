@@ -15,12 +15,23 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import RedirectView
-from apps_store.views import HeroAppView, WeeklyAppsView, CategoryListView, SubCategoryDetailView # <-- Импорт
-from apps_store.views import SearchAppsView
+
+# ДОБАВЛЯЕМ TopAppsView и AppDetailView в импорты
+from apps_store.views import (
+    HeroAppView, 
+    WeeklyAppsView, 
+    TopAppsView,  # <--- БЫЛО ПРОПУЩЕНО
+    CategoryListView, 
+    SubCategoryDetailView, 
+    SearchAppsView, 
+    AppDetailView,
+    NewsListView,
+    NewsDetailView
+)
 
 urlpatterns = [
     path('', RedirectView.as_view(url='/admin/', permanent=False)),
@@ -29,10 +40,16 @@ urlpatterns = [
     path('api/hero/', HeroAppView.as_view()),
     path('api/weekly/', WeeklyAppsView.as_view()),
     
-    # Новая ссылка для категорий:
+    # ВОТ ЭТОГО НЕ ХВАТАЛО:
+    path('api/apps/', TopAppsView.as_view()), 
+    
     path('api/categories/', CategoryListView.as_view()),
-    path('api/subcategory/<slug:slug>/', SubCategoryDetailView.as_view()), # <-- Новый путь
-    path('api/search/', SearchAppsView.as_view()), # <-- Новый путь
+    path('api/subcategory/<slug:slug>/', SubCategoryDetailView.as_view()),
+    path('api/search/', SearchAppsView.as_view()),
+    path('api/app/<str:username>/', AppDetailView.as_view()),
+    path('ckeditor/', include('ckeditor_uploader.urls')),
+    path('api/news/', NewsListView.as_view()),
+    path('api/news/<int:id>/', NewsDetailView.as_view()), 
 ]
 
 if settings.DEBUG:

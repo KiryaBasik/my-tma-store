@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { ArrowLeft, Download, Star } from "lucide-react";
+import Image from "next/image";
 
-// Функция поиска
 async function searchApps(query: string, lang: string) {
   if (!query) return [];
   try {
     const res = await fetch(
-      `http://127.0.0.1:8000/api/search/?q=${encodeURIComponent(
+      `http://localhost:8000/api/search/?q=${encodeURIComponent(
         query
       )}&lang=${lang}`,
       { cache: "no-store" }
@@ -27,7 +27,6 @@ export default async function SearchPage({
 }) {
   const { lang } = await params;
   const { q } = await searchParams;
-
   const results = await searchApps(q, lang);
 
   return (
@@ -58,34 +57,49 @@ export default async function SearchPage({
           {results.map((app: any) => (
             <div
               key={app.id}
-              className="group bg-card border border-border rounded-[2rem] p-5 hover:border-blue-500/30 hover:shadow-xl dark:hover:shadow-blue-900/10 transition-all duration-300 flex flex-col gap-4"
+              className="group relative bg-card border border-border rounded-[2rem] p-5 hover:border-blue-500/30 hover:shadow-xl dark:hover:shadow-blue-900/10 transition-all duration-300 flex flex-col gap-4 overflow-hidden"
             >
-              <div className="flex items-start justify-between">
-                <div className="w-16 h-16 rounded-2xl overflow-hidden bg-secondary">
+              {/* ССЫЛКА НА SINGLE */}
+              <Link
+                href={`/app/${app.username.replace("@", "")}`}
+                className="absolute inset-0 z-10"
+              >
+                <span className="sr-only">Details</span>
+              </Link>
+
+              <div className="flex items-start justify-between relative z-20 pointer-events-none">
+                <div className="w-16 h-16 rounded-2xl overflow-hidden bg-secondary relative">
                   {app.icon ? (
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    <img
-                      src={app.icon}
+                    <Image
+                      src={
+                        app.icon.startsWith("http")
+                          ? app.icon
+                          : `http://localhost:8000${app.icon}`
+                      }
                       alt={app.title}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
+                      unoptimized
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center font-bold text-2xl text-gray-400">
-                      {app.title[0]}
+                      {app.title?.[0]}
                     </div>
                   )}
                 </div>
+
+                {/* КНОПКА OPEN */}
                 <a
                   href={app.telegram_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-foreground text-background px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 hover:scale-105 active:scale-95 transition-transform"
+                  className="pointer-events-auto bg-foreground text-background px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 hover:scale-105 active:scale-95 transition-transform z-30"
                 >
                   Open <Download size={14} />
                 </a>
               </div>
 
-              <div>
+              <div className="relative z-0">
                 <h3 className="text-lg font-bold leading-tight mb-1 group-hover:text-blue-500 transition-colors">
                   {app.title}
                 </h3>
@@ -94,7 +108,7 @@ export default async function SearchPage({
                 </p>
               </div>
 
-              <div className="mt-auto pt-4 border-t border-border flex items-center justify-between text-xs font-medium text-gray-500">
+              <div className="mt-auto pt-4 border-t border-border flex items-center justify-between text-xs font-medium text-gray-500 relative z-0">
                 <span className="flex items-center gap-1 text-yellow-500">
                   <Star size={12} fill="currentColor" /> {app.rating}
                 </span>

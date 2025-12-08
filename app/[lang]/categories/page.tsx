@@ -5,9 +5,9 @@ import { getDictionary } from "@/app/dictionaries";
 // Функция получения данных С ЯЗЫКОМ
 async function getCategories(lang: string) {
   try {
-    // Передаем ?lang=ru или ?lang=en
+    // ИСПРАВЛЕНИЕ: 127.0.0.1 -> localhost
     const res = await fetch(
-      `http://127.0.0.1:8000/api/categories/?lang=${lang}`,
+      `http://localhost:8000/api/categories/?lang=${lang}`,
       {
         cache: "no-store",
       }
@@ -26,12 +26,11 @@ export default async function CategoriesPage({
   params: Promise<{ lang: string }>;
 }) {
   const { lang } = await params;
-  const dict = await getDictionary(lang); // Получаем словарь
-  const categories = await getCategories(lang); // Получаем данные с учетом языка
+  const dict = await getDictionary(lang);
+  const categories = await getCategories(lang);
 
   return (
     <div className="min-h-screen flex flex-col gap-20 pb-20">
-      {/* Передаем словарь в Hero */}
       <CategoriesHero dict={dict.categories} lang={lang} />
 
       {categories.length === 0 ? (
@@ -43,7 +42,7 @@ export default async function CategoriesPage({
           <CategorySection
             key={cat.id}
             id={cat.slug}
-            title={cat.name} // Бэкенд уже должен отдать правильное имя, если мы настроим сериализатор категорий
+            title={cat.name}
             description={cat.description}
             icon={<span className="text-2xl">{cat.icon_emoji}</span>}
             color={

@@ -18,25 +18,28 @@ interface HeroAppProps {
 export default function HeroSection({ apps }: { apps: HeroAppProps[] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  // ЗАЩИТА: Убедимся, что apps это массив, даже если придет null/undefined
+  const safeApps = Array.isArray(apps) ? apps : [];
+
   // Логика карусели
   useEffect(() => {
-    if (!apps || apps.length <= 1) return;
+    if (!safeApps || safeApps.length <= 1) return;
 
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % apps.length);
+      setCurrentIndex((prev) => (prev + 1) % safeApps.length);
     }, 6000);
 
     return () => clearInterval(interval);
-  }, [apps]);
+  }, [safeApps]);
 
   const getIconUrl = (url: string | null) => {
     if (!url) return null;
     if (url.startsWith("http")) return url;
-    return `http://127.0.0.1:8000${url}`;
+    return `http://localhost:8000${url}`; // Было 127.0.0.1
   };
 
   // Подготовка данных для текущего слайда
-  const currentApp = apps && apps.length > 0 ? apps[currentIndex] : null;
+  const currentApp = safeApps.length > 0 ? safeApps[currentIndex] : null;
 
   const data = currentApp
     ? {
@@ -169,9 +172,9 @@ export default function HeroSection({ apps }: { apps: HeroAppProps[] }) {
         </AnimatePresence>
 
         {/* Indicators (Dots) */}
-        {apps && apps.length > 1 && (
+        {safeApps.length > 1 && (
           <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-20">
-            {apps.map((_, idx) => (
+            {safeApps.map((_, idx) => (
               <button
                 key={idx}
                 onClick={() => setCurrentIndex(idx)}

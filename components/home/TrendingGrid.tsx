@@ -39,7 +39,7 @@ export default function WeeklyFeatured({
   const getIconUrl = (url: string) => {
     if (!url) return null;
     if (url.startsWith("http")) return url;
-    return `http://127.0.0.1:8000${url}`;
+    return `http://localhost:8000${url}`; // Было 127.0.0.1
   };
 
   if (!initialApps || initialApps.length === 0 || !dict) {

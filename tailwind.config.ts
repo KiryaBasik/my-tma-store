@@ -1,7 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
-  darkMode: "class", // Важно для next-themes
+  darkMode: "class",
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
@@ -9,6 +9,7 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      // ... (ваши цвета)
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
@@ -20,6 +21,8 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require("@tailwindcss/typography"), // <--- ДОБАВИТЬ ЭТУ СТРОКУ
+  ],
 };
 export default config;
