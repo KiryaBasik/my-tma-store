@@ -1,6 +1,10 @@
 from django.contrib import admin
+from django.urls import path
+from django.http import HttpResponseRedirect
 from django.utils.html import format_html
-from .models import TelegramApp, Category, SubCategory, HeroAppProxy, WeeklyAppProxy, NewsPost
+from django.core.management import call_command
+from django.contrib import messages
+from .models import ParsingSource, TelegramApp, Category, SubCategory, NewsPost, HeroAppProxy, WeeklyAppProxy
 
 # --- Общая настройка ---
 admin.site.site_header = "FindMini Admin"
@@ -83,3 +87,30 @@ class NewsAdmin(admin.ModelAdmin):
     list_display = ('title_en', 'category', 'created_at', 'is_published')
     list_filter = ('category', 'is_published', 'created_at')
     search_fields = ('title_en', 'title_ru')
+
+@admin.register(ParsingSource)
+class ParsingSourceAdmin(admin.ModelAdmin):
+    list_display = ('url', 'target_category', 'is_active', 'last_parsed')
+    list_filter = ('is_active', 'target_category')
+    
+    # Добавляем кастомную кнопку в шаблон
+    change_list_template = "admin/parsing_source_changelist.html"
+
+    def get_urls(self):
+        urls = super().get_urls()
+        my_urls = [
+            path('run-parser/', self.run_parser_view, name='run_super_parser'),
+        ]
+        return my_urls + urls
+
+    def run_parser_view(self, request):
+        # ЗАПУСК КОМАНДЫ
+        # Внимание: Это синхронный запуск. Если парсинг долгий, страница зависнет.
+        # В идеале это нужно делать через Celery, но для MVP так сработает.
+        try:
+            call_command('super_parser')
+            self.message_user(request, "✅ Парсер успешно отработал! Проверьте новые приложения.", messages.SUCCESS)
+        except Exception as e:
+            self.message_user(request, f"❌ Ошибка парсера: {e}", messages.ERROR)
+            
+        return HttpResponseRedirect("../")

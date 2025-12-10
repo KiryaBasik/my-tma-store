@@ -100,3 +100,20 @@ class NewsPost(models.Model):
     class Meta: 
         verbose_name = "Новость" 
         verbose_name_plural = "📰 Новости и Статьи"
+        
+# 4. ИСТОЧНИКИ ПАРСИНГА
+class ParsingSource(models.Model):
+    url = models.URLField(verbose_name="Ссылка на категорию (Донор)", unique=True)
+    # Можно привязать к нашей категории, чтобы парсер знал, куда класть
+    target_category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="В какую категорию класть?")
+    target_subcategory = models.ForeignKey(SubCategory, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="В какую подкатегорию?")
+    
+    is_active = models.BooleanField(default=True, verbose_name="Активен?")
+    last_parsed = models.DateTimeField(null=True, blank=True, verbose_name="Последний парсинг")
+    
+    def __str__(self):
+        return self.url
+
+    class Meta:
+        verbose_name = "🤖 Источник парсинга"
+        verbose_name_plural = "🤖 Источники парсинга"
