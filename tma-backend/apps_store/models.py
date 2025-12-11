@@ -117,3 +117,18 @@ class ParsingSource(models.Model):
     class Meta:
         verbose_name = "🤖 Источник парсинга"
         verbose_name_plural = "🤖 Источники парсинга"
+
+# --- tma-backend/apps_store/models.py ---
+
+class TelegramSource(models.Model):
+    title = models.CharField(max_length=100, verbose_name="Название канала (для себя)", blank=True)
+    url = models.URLField(unique=True, verbose_name="Ссылка (https://t.me/...)")
+    is_active = models.BooleanField(default=True, verbose_name="Активен?")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title if self.title else self.url
+
+    class Meta:
+        verbose_name = "Источник Telegram (Real-Time)"
+        verbose_name_plural = "Источники Telegram (Real-Time)"

@@ -30,7 +30,8 @@ from apps_store.views import (
     SearchAppsView, 
     AppDetailView,
     NewsListView,
-    NewsDetailView
+    NewsDetailView,
+    StatsView
 )
 
 urlpatterns = [
@@ -50,6 +51,7 @@ urlpatterns = [
     path('ckeditor/', include('ckeditor_uploader.urls')),
     path('api/news/', NewsListView.as_view()),
     path('api/news/<int:id>/', NewsDetailView.as_view()), 
+    path('api/stats/', StatsView.as_view()),
 ]
 
 if settings.DEBUG:

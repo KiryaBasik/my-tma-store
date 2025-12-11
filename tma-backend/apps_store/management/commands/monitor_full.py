@@ -8,90 +8,101 @@ from telethon import TelegramClient, events
 from django.core.management.base import BaseCommand
 from django.core.files.base import ContentFile
 from asgiref.sync import sync_to_async
-from apps_store.models import TelegramApp, SubCategory
+# Импортируем новую модель TelegramSource
+from apps_store.models import TelegramApp, SubCategory, TelegramSource 
 from apps_store.ai_service import process_app_with_ai
 
-# Убрали все лишние каналы. Оставляем список пустым, 
-# так как мы будем добавлять только ваш канал из .env
-BASE_CHANNELS = [] 
-
 class Command(BaseCommand):
-    help = 'ТЕСТОВЫЙ МОНИТОР: Слушает ТОЛЬКО один канал из .env'
+    help = 'МОНИТОР: Слушает каналы из таблицы TelegramSource и постит новинки'
 
     def handle(self, *args, **options):
         # 1. Загружаем конфиги
         self.api_id = os.getenv("TELEGRAM_API_ID")
         self.api_hash = os.getenv("TELEGRAM_API_HASH")
         self.bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
-        self.channel_id = os.getenv("TELEGRAM_CHANNEL_ID")
+        self.target_channel_id = os.getenv("TELEGRAM_CHANNEL_ID")
         
-        if not all([self.api_id, self.api_hash, self.bot_token, self.channel_id]):
-            self.stdout.write(self.style.ERROR("❌ Ошибка: Проверь .env (нужны API_ID, API_HASH, BOT_TOKEN, CHANNEL_ID)"))
+        if not all([self.api_id, self.api_hash, self.bot_token, self.target_channel_id]):
+            self.stdout.write(self.style.ERROR("❌ Ошибка: Проверь .env (API_ID, HASH, BOT_TOKEN, CHANNEL_ID)"))
             return
 
-        try:
-            self.channel_id_int = int(self.channel_id)
-        except:
-            self.stdout.write(self.style.ERROR("❌ TELEGRAM_CHANNEL_ID должен быть числом (начинается с -100)"))
-            return
+        # 2. ПОЛУЧАЕМ СПИСОК КАНАЛОВ ИЗ НОВОЙ ТАБЛИЦЫ
+        db_sources = TelegramSource.objects.filter(is_active=True)
+        channels_to_watch = []
+        
+        print("\n📡 [SYSTEM] Загружаю список каналов из таблицы TelegramSource...")
+        for src in db_sources:
+            # Вытаскиваем юзернейм из ссылки
+            match = re.search(r'(?:t\.me|telegram\.me)/([a-zA-Z0-9_]+)', src.url)
+            if match:
+                username = match.group(1)
+                channels_to_watch.append(username)
+                print(f"   ✅ Добавлен в прослушку: @{username} ({src.title})")
+            else:
+                print(f"   ⚠️ Ссылка некорректна (нужна t.me/...): {src.url}")
 
-        # 2. Формируем список: ТОЛЬКО ваш канал
-        channels_to_watch = [self.channel_id_int]
+        if not channels_to_watch:
+            self.stdout.write(self.style.WARNING("⚠️ В базе нет активных Telegram-источников! Добавь их в админке."))
+            # Мы не останавливаем скрипт, чтобы ты мог добавить каналы и перезапустить позже
+        
+        # 3. Запускаем Клиент
+        # Важно: имя сессии 'monitor_realtime', чтобы не путать со старыми
+        client = TelegramClient('monitor_realtime_session', int(self.api_id), self.api_hash)
 
-        # 3. Запускаем Userbot
-        client = TelegramClient('monitor_full_session', int(self.api_id), self.api_hash)
-
-        # --- ХЕНДЛЕР ---
         @client.on(events.NewMessage(chats=channels_to_watch))
         async def tg_handler(event):
             try:
-                # Игнорируем свои же сообщения от бота
-                sender = await event.get_sender()
-                if sender and getattr(sender, 'bot', False):
-                    return
-
                 text = event.message.message
+                chat = await event.get_chat()
+                chat_title = chat.username or chat.title
+                
                 if not text: return
                 
-                print(f"\n🔔 [СЛУШАТЕЛЬ] Новый пост в ВАШЕМ канале!")
+                print(f"\n🔔 [NEW POST] Источник: @{chat_title}")
 
-                # Ищем ссылки на ботов
-                usernames = re.findall(r'@([a-zA-Z0-9_]+bot)', text, re.IGNORECASE)
-                links = re.findall(r'(?:t\.me|telegram\.me)/([a-zA-Z0-9_]+bot)', text, re.IGNORECASE)
-                found_apps = set(usernames + links)
+                # Ищем любые юзернеймы и ссылки
+                usernames = re.findall(r'@([a-zA-Z0-9_]+)', text)
+                links = re.findall(r'(?:t\.me|telegram\.me)/([a-zA-Z0-9_]+)', text)
+                
+                # Фильтр мусора
+                ignore_list = {'kb', 'proxy', 'socks', 'share', 'addstickers', 'iv', 'botfather'} 
+                found_candidates = set(usernames + links) - ignore_list
 
-                if found_apps:
-                    for username in found_apps:
+                if found_candidates:
+                    print(f"   🔎 Найдены упоминания: {found_candidates}")
+                    for username in found_candidates:
                         await self.process_app_async(client, username)
                 else:
-                    print("   ❌ В посте нет ссылки на бота. Пропускаю.")
+                    print("   ❌ Ссылок на приложения в посте не найдено.")
 
             except Exception as e:
                 print(f"❌ [TG Error]: {e}")
 
         # --- СТАРТ ---
-        self.stdout.write(self.style.SUCCESS("🚀 РЕЖИМ ТЕСТИРОВАНИЯ ЗАПУЩЕН"))
-        self.stdout.write(f"👀 Слушаю ТОЛЬКО канал ID: {self.channel_id}")
-        self.stdout.write(f"🌍 Веб-сканер сайтов ОТКЛЮЧЕН.")
-
-        # Веб-сканер отключен (не запускаем create_task для него)
+        self.stdout.write(self.style.SUCCESS(f"🚀 МОНИТОР ЗАПУЩЕН. Активных каналов: {len(channels_to_watch)}"))
         client.start()
         client.run_until_disconnected()
 
-    # === ОБРАБОТКА ===
+    # === ЛОГИКА ОБРАБОТКИ (Такая же, как и была) ===
     async def process_app_async(self, client, username):
-        # Быстрая проверка
+        # Проверка в БД
         exists = await sync_to_async(TelegramApp.objects.filter(username=f"@{username}").exists)()
         if exists: 
-            print(f"   ⏭️  @{username} уже есть в базе.")
+            print(f"   ⏭️  @{username} уже есть в каталоге. Пропуск.")
             return
 
-        print(f"   ✨ Найден новый: @{username}")
+        print(f"   ✨ Анализ кандидата: @{username}")
         
         try:
-            # Пытаемся получить инфу через Telegram API
-            entity = await client.get_entity(username)
-            if not getattr(entity, 'bot', False): return
+            try:
+                entity = await client.get_entity(username)
+            except ValueError:
+                print(f"      ⚠️ Не удалось найти @{username} (возможно, приватный или не существует).")
+                return
+
+            if not getattr(entity, 'bot', False): 
+                print(f"      🚫 Это пользователь/канал, а не бот. Пропуск.")
+                return
 
             from telethon.tl.functions.users import GetFullUserRequest
             full_user = await client(GetFullUserRequest(entity))
@@ -102,27 +113,22 @@ class Command(BaseCommand):
             await sync_to_async(self.save_app_with_ai)(username, raw_title, raw_desc)
             
         except Exception as e:
-            print(f"   ⚠️ Ошибка получения данных: {e}")
-            # В тестовом режиме лучше пропустить, если не удалось получить данные чисто
+            print(f"   ⚠️ Ошибка Telethon: {e}")
             
     def save_app_with_ai(self, username, raw_title, raw_desc):
-        if TelegramApp.objects.filter(username=f"@{username}").exists(): return
-
-        print(f"      🤖 AI Генерация контента...")
+        print(f"      🤖 Отправляю в AI для описания...")
         ai_data = process_app_with_ai(raw_title, raw_desc)
         
         if not ai_data:
-            print("      🚫 AI отклонил (Unsafe/Error)")
+            print("      🚫 AI отклонил приложение (Скам или ошибка).")
             return
 
-        # Категория (упрощенный поиск)
         target_sub = None
         if ai_data.get('subcategory'):
             target_sub = SubCategory.objects.filter(name__iexact=ai_data.get('subcategory')).first()
         if not target_sub:
             target_sub = SubCategory.objects.first()
 
-        # Создаем
         app = TelegramApp.objects.create(
             username=f"@{username}",
             telegram_url=f"https://t.me/{username}",
@@ -134,13 +140,14 @@ class Command(BaseCommand):
             short_description_ru=ai_data.get('short_description_ru', ''),
             subcategory=target_sub,
             is_ai_processed=True,
-            rating=0.0,
+            rating=5.0, # Ставим 5.0 для новинок
             users_count_str="New 🔥"
         )
         
-        # Иконка
+        # Скачиваем иконку
         icon_path = None
         try:
+            print("      🖼️ Скачиваю иконку...")
             r = requests.get(f"https://t.me/{username}")
             if r.status_code == 200:
                 soup = BeautifulSoup(r.text, 'html.parser')
@@ -150,23 +157,21 @@ class Command(BaseCommand):
                     if img_res.status_code == 200:
                         app.icon.save(f"{username}.jpg", ContentFile(img_res.content), save=True)
                         icon_path = app.icon.path
-        except: pass
+        except Exception: pass
 
-        print(f"      ✅ Сохранено в БД! (ID: {app.id})")
-        
-        # Постинг
+        print(f"      ✅ УСПЕХ! Приложение добавлено (ID: {app.id})")
         self.send_to_telegram_channel(app, icon_path)
 
     def send_to_telegram_channel(self, app, icon_path):
-        if not self.bot_token or not self.channel_id: return
+        if not self.bot_token or not self.target_channel_id: return
 
-        cat_name = app.subcategory.parent_category.name_ru if app.subcategory else "Приложения"
+        cat_name = app.subcategory.name_ru if app.subcategory and app.subcategory.name_ru else "Приложения"
         
         caption = (
             f"🔥 <b>Новинка: {app.title_ru}</b>\n\n"
             f"{app.short_description_ru}\n\n"
-            f"📂 <b>Категория:</b> #{cat_name.replace(' ', '_')}\n\n"
-            f"👇 <b>Попробовать:</b>\n"
+            f"📂 <b>Категория:</b> #{cat_name.replace(' ', '_')}\n"
+            f"👇 <b>Запустить:</b>\n"
             f"{app.telegram_url}"
         )
 
@@ -174,31 +179,15 @@ class Command(BaseCommand):
             url_photo = f"https://api.telegram.org/bot{self.bot_token}/sendPhoto"
             url_msg = f"https://api.telegram.org/bot{self.bot_token}/sendMessage"
             
-            # Кнопка
-            reply_markup = {
-                "inline_keyboard": [[
-                    {"text": "🚀 Запустить (Launch)", "url": app.telegram_url}
-                ]]
-            }
-            markup_json = str(reply_markup).replace("'", '"')
+            import json
+            markup_json = json.dumps({"inline_keyboard": [[{"text": "🚀 Запустить", "url": app.telegram_url}]]})
 
             if icon_path and os.path.exists(icon_path):
                 with open(icon_path, 'rb') as f:
-                    requests.post(url_photo, data={
-                        "chat_id": self.channel_id,
-                        "caption": caption,
-                        "parse_mode": "HTML",
-                        "reply_markup": markup_json
-                    }, files={'photo': f})
+                    requests.post(url_photo, data={"chat_id": self.target_channel_id, "caption": caption, "parse_mode": "HTML", "reply_markup": markup_json}, files={'photo': f})
             else:
-                requests.post(url_msg, data={
-                    "chat_id": self.channel_id,
-                    "text": caption,
-                    "parse_mode": "HTML",
-                    "reply_markup": markup_json
-                })
+                requests.post(url_msg, data={"chat_id": self.target_channel_id, "text": caption, "parse_mode": "HTML", "reply_markup": markup_json})
             
-            print(f"      📢 ОПУБЛИКОВАНО В ВАШЕМ КАНАЛЕ!")
-
+            print(f"      📢 Опубликовано в канал!")
         except Exception as e:
-            print(f"      ❌ Ошибка постинга: {e}")
+            print(f"      ❌ Ошибка постинга в канал: {e}")

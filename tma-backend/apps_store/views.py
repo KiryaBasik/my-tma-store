@@ -1,6 +1,10 @@
 import random
-from datetime import date
+from datetime import date, timedelta  # <--- ДОБАВИЛИ timedelta
+from django.utils import timezone     # <--- ДОБАВИЛИ timezone
+from django.db.models import Count
 from rest_framework import generics
+from rest_framework.views import APIView      # <--- ДОБАВИЛИ APIView
+from rest_framework.response import Response  # <--- ДОБАВИЛИ Response
 from django.db.models import Q
 from .models import TelegramApp, Category, SubCategory, NewsPost
 from .serializers import (
@@ -112,3 +116,29 @@ class NewsDetailView(generics.RetrieveAPIView):
     queryset = NewsPost.objects.filter(is_published=True)
     serializer_class = NewsPostSerializer
     lookup_field = 'id'
+
+class StatsView(APIView):
+    def get(self, request):
+        # 1. Общее количество
+        total_count = TelegramApp.objects.count()
+
+        # 2. Данные для графика (последние 7 дней)
+        today = timezone.now().date()
+        chart_data = []
+        
+        # Проходим циклом по последним 7 дням
+        for i in range(6, -1, -1):
+            check_date = today - timedelta(days=i)
+            # Считаем сколько создано в этот день
+            count = TelegramApp.objects.filter(created_at__date=check_date).count()
+            
+            # Формируем объект: name (День недели), apps (Кол-во)
+            chart_data.append({
+                "name": check_date.strftime("%a"), # Mon, Tue...
+                "apps": count
+            })
+
+        return Response({
+            "total": total_count,
+            "chart": chart_data
+        })

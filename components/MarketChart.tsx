@@ -9,24 +9,25 @@ import {
 } from "recharts";
 import { useTheme } from "next-themes";
 
-const data = [
-  { name: "Mon", apps: 4000 },
-  { name: "Tue", apps: 3000 },
-  { name: "Wed", apps: 5000 },
-  { name: "Thu", apps: 2780 },
-  { name: "Fri", apps: 6890 },
-  { name: "Sat", apps: 8390 },
-  { name: "Sun", apps: 10400 },
-];
-
-export default function MarketChart() {
+export default function MarketChart({ data }: { data: any[] }) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
+
+  // Заглушка на случай пустоты
+  const safeData =
+    data && data.length > 0
+      ? data
+      : Array.from({ length: 7 }).map((_, i) => ({ name: "", apps: 0 }));
+
+  // Вычисляем максимум, чтобы график не был плоским
+  const maxApps = Math.max(...safeData.map((d) => d.apps));
+  // Если максимум 0 (нет данных), ставим 5 для красоты оси
+  const yDomainMax = maxApps > 0 ? "auto" : 5;
 
   return (
     <div className="w-full h-[300px]">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data}>
+        <AreaChart data={safeData}>
           <defs>
             <linearGradient id="colorApps" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
@@ -36,15 +37,18 @@ export default function MarketChart() {
           <XAxis
             dataKey="name"
             stroke={isDark ? "#555" : "#94a3b8"}
-            tick={{ fill: isDark ? "#9ca3af" : "#64748b" }}
+            tick={{ fill: isDark ? "#9ca3af" : "#64748b", fontSize: 12 }}
             axisLine={false}
             tickLine={false}
+            dy={10}
           />
           <YAxis
             stroke={isDark ? "#555" : "#94a3b8"}
-            tick={{ fill: isDark ? "#9ca3af" : "#64748b" }}
+            tick={{ fill: isDark ? "#9ca3af" : "#64748b", fontSize: 12 }}
             axisLine={false}
             tickLine={false}
+            allowDecimals={false}
+            domain={[0, yDomainMax]} // <--- ВАЖНО: Фиксируем диапазон
           />
           <Tooltip
             contentStyle={{
@@ -63,6 +67,7 @@ export default function MarketChart() {
             strokeWidth={3}
             fillOpacity={1}
             fill="url(#colorApps)"
+            animationDuration={1500} // Плавная анимация при появлении
           />
         </AreaChart>
       </ResponsiveContainer>

@@ -10,10 +10,14 @@ const dictionaries = {
       submit: "+ Submit",
     },
     hero: {
-      featured: "Featured Now",
+      featured: "Featured #1",
       welcome: "Welcome",
       launch: "Launch App",
       more: "More Details",
+      trending: "Trending", // Новое
+      category: "Category", // Новое
+      users: "Users", // Новое
+      rating: "Rating", // Новое
     },
     topApps: {
       title: "Top Apps of the Day",
@@ -21,9 +25,11 @@ const dictionaries = {
       users: "users",
     },
     stats: {
-      marketPulse: "Market Pulse",
-      newApps: "New apps added this week",
-      viewReport: "View Full Report",
+      marketPulse: "Market Growth",
+      totalApps: "Total Apps & Bots",
+      submitTitle: "Developer or Founder?",
+      submitDesc: "Submit your app to our catalog to get traffic and users.",
+      submitBtn: "Contact & Submit",
     },
     trending: {
       title: "Apps of the Week",
@@ -68,11 +74,12 @@ const dictionaries = {
     },
     categories: {
       heroTitle: "Discover Next-Gen Apps",
-      heroSubtitle: "Dive into the Telegram Mini Apps ecosystem. Find gems across DeFi, Gaming, and Utilities designed for the new web.",
+      heroSubtitle:
+        "Dive into the Telegram Mini Apps ecosystem. Find gems across DeFi, Gaming, and Utilities designed for the new web.",
       badge: "App Exploratorium",
       searchPlaceholder: "Search apps...",
       empty: "No categories found.",
-    }
+    },
   },
   ru: {
     navigation: {
@@ -83,10 +90,14 @@ const dictionaries = {
       submit: "+ Добавить",
     },
     hero: {
-      featured: "Рекомендуем",
+      featured: "Рекомендуем #1",
       welcome: "Добро пожаловать",
       launch: "Запустить",
       more: "Подробнее",
+      trending: "В тренде", // Новое
+      category: "Категория", // Новое
+      users: "Польз.", // Новое
+      rating: "Рейтинг", // Новое
     },
     topApps: {
       title: "Топ приложений дня",
@@ -94,9 +105,11 @@ const dictionaries = {
       users: "польз.",
     },
     stats: {
-      marketPulse: "Пульс рынка",
-      newApps: "Новых приложений за неделю",
-      viewReport: "Полный отчет",
+      marketPulse: "Рост рынка",
+      totalApps: "Всего приложений и ботов",
+      submitTitle: "Разработчик или Фаундер?",
+      submitDesc: "Добавьте свое приложение в каталог, чтобы получить трафик и пользователей.",
+      submitBtn: "Написать и Добавить",
     },
     trending: {
       title: "Приложения недели",
@@ -113,7 +126,8 @@ const dictionaries = {
     },
     categories: {
       heroTitle: "Откройте приложения нового поколения",
-      heroSubtitle: "Погрузитесь в экосистему Telegram Mini Apps. Находите жемчужины в DeFi, Играх и Утилитах для нового веба.",
+      heroSubtitle:
+        "Погрузитесь в экосистему Telegram Mini Apps. Находите жемчужины в DeFi, Играх и Утилитах для нового веба.",
       badge: "Исследователь приложений",
       searchPlaceholder: "Поиск приложений...",
       empty: "Категории не найдены.",
@@ -146,7 +160,6 @@ const dictionaries = {
         "Условия использования",
         "Отказ от ответственности",
       ],
-      
     },
   },
 };

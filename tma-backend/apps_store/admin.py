@@ -4,7 +4,7 @@ from django.http import HttpResponseRedirect
 from django.utils.html import format_html
 from django.core.management import call_command
 from django.contrib import messages
-from .models import ParsingSource, TelegramApp, Category, SubCategory, NewsPost, HeroAppProxy, WeeklyAppProxy
+from .models import ParsingSource, TelegramApp, Category, SubCategory, NewsPost, HeroAppProxy, WeeklyAppProxy, TelegramSource
 
 # --- Общая настройка ---
 admin.site.site_header = "FindMini Admin"
@@ -114,3 +114,9 @@ class ParsingSourceAdmin(admin.ModelAdmin):
             self.message_user(request, f"❌ Ошибка парсера: {e}", messages.ERROR)
             
         return HttpResponseRedirect("../")
+    
+@admin.register(TelegramSource)
+class TelegramSourceAdmin(admin.ModelAdmin):
+    list_display = ('title', 'url', 'is_active', 'created_at')
+    list_filter = ('is_active',)
+    search_fields = ('url', 'title')

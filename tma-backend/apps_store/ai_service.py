@@ -1,30 +1,51 @@
 import os
 import json
-import time
-import random
-import google.generativeai as genai
+import re
+from openai import OpenAI
 from django.conf import settings
 
-# --- ЛОГИКА РОТАЦИИ КЛЮЧЕЙ ---
-def get_api_keys():
-    # Пробуем взять список ключей через запятую
-    keys_str = os.getenv("GEMINI_API_KEYS")
-    if keys_str:
-        return [k.strip() for k in keys_str.split(',') if k.strip()]
-    
-    # Фолбек на старый одиночный ключ
-    single_key = os.getenv("GEMINI_API_KEY")
-    if single_key:
-        return [single_key]
-    
-    return []
+API_KEY = os.getenv("AIML_API_KEY")
+BASE_URL = os.getenv("AIML_BASE_URL", "https://api.aimlapi.com/v1")
 
-API_KEYS = get_api_keys()
+if not API_KEY:
+    print("⚠️ WARNING: AIML_API_KEY not found in env!")
 
-if not API_KEYS:
-    print("⚠️ WARNING: GEMINI_API_KEYS not found in env!")
+# --- БАЗА ЗАПРЕЩЕННЫХ СЛОВ (STOP WORDS) ---
+STOP_WORDS = [
+    # === 18+ / PORN (RU) ===
+    "порно", "секс", "интим", "член", "вагина", "сиськи", "шлюха", "проститутка", "эротика", "насилие",
+    "порнуха", "соски", "минет", "куни", "анал", "оргазм", "свингер", "эскорт", "дрочить", "хентай",
+    "педофил", "зоофил", "изнасилование", "бдсм", "голые", "обнаженка", "сливы", "онлифанс", "onlyfans",
+    "шмара", "давалка", "путана", "мастурбация", "стояк", "кончить", "сперма", "порн", "xxx", "18+", 
+    "18 plus", "18 плюс", "эро", "нюдсы", "nuds",
 
-# Карта категорий
+    # === 18+ / PORN (EN) ===
+    "porn", "sex", "nude", "naked", "adult", "boobs", "pussy", "dick", "cock", "whore",
+    "slut", "prostitute", "erotic", "hentai", "milf", "anal", "oral", "blowjob", "cum", "masturbate",
+    "escort", "swinger", "incest", "pedophile", "rape", "bdsm", "tits", "vagina", "penis", "fuck", 
+    "horny", "booty", "ass", "xxx", "uncensored", "leaked",
+
+    # === CASINO / SCAM (RU) ===
+    "казино", "ставки", "слоты", "рулетка", "азарт", "беттинг", "вулкан", "vulkan", "1win", "1xbet", 
+    "melbet", "mostbet", "покер", "блэкджек", "выигрыш", "занос", "лудомания", "джекпот", "авиатор", 
+    "aviator", "lucky jet", "crash game",
+
+    # === CASINO / SCAM (EN) ===
+    "casino", "betting", "slots", "roulette", "gambling", "poker", "blackjack", "jackpot", "bet", 
+    "wagering", "bookmaker",
+
+    # === HATE / PROFANITY (RU) ===
+    "пидор", "гей", "лесбиянка", "лгбт", "даун", "аутист", "урод", "чмо", "тварь", "сука", "блядь", 
+    "ебать", "хуй", "пизда", "еблан", "мудак", "гандон", "шлюха", "мать", "хохол", "москаль", "жид", 
+    "чурка", "хач", "ниггер", "смерть", "убить", "суицид", "наркотики", "кокаин", "героин", "мефедрон", 
+    "соли", "спайс", "закладки", "кладмен",
+
+    # === HATE / PROFANITY (EN) ===
+    "gay", "lesbian", "lgbt", "faggot", "retard", "autist", "idiot", "bitch", "shit", "asshole", 
+    "cunt", "motherfucker", "bastard", "nigger", "nigga", "kill", "die", "suicide", "terrorist", 
+    "drug", "cocaine", "heroin", "weed", "dealer"
+]
+
 CATEGORY_STRUCTURE = {
     "Crypto and Web3": ["Wallets", "DeFi & Staking", "Exchanges", "Airdrops", "NFT & Collectibles", "Trading Tools", "GameFi"],
     "Games": ["Tap to Earn", "RPG & Strategy", "Arcade & Action", "Puzzles & Quests", "Farming"],
@@ -34,84 +55,99 @@ CATEGORY_STRUCTURE = {
 }
 
 def process_app_with_ai(raw_title, raw_description):
-    """
-    Анализирует приложение с ротацией ключей API.
-    """
-    if not API_KEYS:
+    if not API_KEY:
         return None
 
+    # 1. НОРМАЛИЗАЦИЯ И ПОДГОТОВКА ТЕКСТА
+    # Собираем всё в одну строку и переводим в нижний регистр для проверки
+    full_text = (str(raw_title) + " " + str(raw_description)).lower()
+    
+    print(f"      📝 Checking text for STOP WORDS ({len(full_text)} chars)...")
+
+    # 2. ЖЕСТКАЯ ПРОВЕРКА ПО СЛОВАРЮ (БЕЗ ИИ)
+    for bad_word in STOP_WORDS:
+        # Ищем слово как отдельное слово или как часть (в зависимости от жесткости)
+        # Если нужно только целые слова: 
+        # if re.search(r'\b' + re.escape(bad_word) + r'\b', full_text):
+        
+        # Сейчас сделаем простую проверку вхождения (строже):
+        if bad_word in full_text:
+            # Исключение для слова "sex" если оно внутри "sexual" (хотя мы и sexual не хотим)
+            # Исключение для "ass" внутри "class" или "pass"
+            if bad_word in ["ass", "hell", "sex", "gay", "bet"]:
+                 # Для коротких английских слов используем проверку границ слова, чтобы не банить "class" из-за "ass"
+                 if not re.search(r'\b' + re.escape(bad_word) + r'\b', full_text):
+                     continue
+
+            print(f"      🚫 БЛОКИРОВКА: Найдено запрещенное слово '{bad_word}'")
+            return None
+
+    print(f"      ✅ Текст чист. Отправляю в AI...")
+
+    # 3. ЕСЛИ ЧИСТО — ОТПРАВЛЯЕМ В ИИ
+    client = OpenAI(
+        api_key=API_KEY,
+        base_url=BASE_URL,
+    )
+
     prompt = f"""
-    You are a strict App Store Moderator and Editor.
+    You are an expert App Store Editor for Telegram Mini Apps.
     
-    TASK 1: SAFETY CHECK
-    Analyze the app title and description.
-    Is it related to: 
-    - 18+ / Porn / Adult content / Sex dating?
-    - Casino / Gambling / Slots / Betting?
-    - Scams / Illegal drugs?
-    If YES, set "is_unsafe": true. Otherwise "is_unsafe": false.
-
-    TASK 2: CATEGORIZATION
-    Assign ONE category and ONE subcategory strictly from this list:
-    {json.dumps(CATEGORY_STRUCTURE)}
-    If unsure, use "Other" -> "Misc".
-
-    TASK 3: CONTENT GENERATION
-    Write catchy content in English (EN) and Russian (RU).
+    TASK:
+    1. Categorize the app using this structure: {json.dumps(CATEGORY_STRUCTURE)}.
+    2. Write catchy content (Title, Short Desc, Full Desc) in English (EN) and Russian (RU).
     
-    INPUT:
-    Title: {raw_title}
-    Desc: {raw_description}
+    INPUT DATA:
+    Name: "{raw_title}"
+    About: "{raw_description}"
 
-    OUTPUT JSON:
+    OUTPUT JSON FORMAT (Strictly JSON, no Markdown):
     {{
-        "is_unsafe": boolean,
-        "title_en": "...",
-        "short_description_en": "...",
-        "description_en": "...",
-        "title_ru": "...",
-        "short_description_ru": "...",
-        "description_ru": "...",
-        "category": "Exact Main Category Name",
-        "subcategory": "Exact Subcategory Name"
+        "is_unsafe": false,
+        "title_en": "String",
+        "short_description_en": "String",
+        "description_en": "String",
+        "title_ru": "String",
+        "short_description_ru": "String",
+        "description_ru": "String",
+        "category": "String (from list)",
+        "subcategory": "String (from list)"
     }}
     """
 
-    models_to_try = ['gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-flash-latest']
-    
-    # Перемешиваем ключи, чтобы нагрузка распределялась равномерно
-    random.shuffle(API_KEYS)
+    models_to_try = [
+        'gpt-4o-mini', 
+        'meta-llama/Llama-3.3-70B-Instruct-Turbo',
+    ]
 
-    for api_key in API_KEYS:
-        # Настраиваем библиотеку на текущий ключ
-        genai.configure(api_key=api_key)
-        
-        for model_name in models_to_try:
+    for model_name in models_to_try:
+        try:
+            response = client.chat.completions.create(
+                model=model_name,
+                messages=[
+                    {"role": "system", "content": "You are a helpful assistant that outputs strictly JSON."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.3,
+            )
+            
+            content = response.choices[0].message.content
+            clean_text = content.replace('```json', '').replace('```', '').strip()
+            
             try:
-                model = genai.GenerativeModel(model_name)
-                response = model.generate_content(prompt)
-                
-                clean_text = response.text.replace('```json', '').replace('```', '').strip()
                 data = json.loads(clean_text)
-                
-                if data.get('is_unsafe') == True:
-                    print(f"   🚫 AI: Контент 18+/Casino. Пропуск.")
-                    return None 
+            except json.JSONDecodeError:
+                print(f"   ⚠️ Ошибка JSON ({model_name})")
+                continue
 
-                return data
+            # Принудительно ставим false, так как мы уже проверили стоп-слова сами
+            data['is_unsafe'] = False
+            
+            print(f"   ✅ Успех через модель: {model_name}")
+            return data
 
-            except Exception as e:
-                error_msg = str(e)
-                # Если лимит (429) - пробуем следующую модель или СЛЕДУЮЩИЙ КЛЮЧ
-                if "429" in error_msg or "Quota" in error_msg:
-                    print(f"   ⏳ Лимит на ключе ...{api_key[-4:]} (модель {model_name}). Меняю...")
-                    time.sleep(2) # Небольшая пауза перед сменой
-                    continue # Идем к следующей модели/ключу
-                else:
-                    # Если другая ошибка (например, перегрузка сервера), просто пишем лог
-                    # print(f"⚠️ Ошибка AI: {error_msg[:50]}")
-                    continue
+        except Exception as e:
+            print(f"   ⚠️ Ошибка модели {model_name}: {str(e)[:100]}...")
+            continue
 
-    print("❌ Все ключи и модели исчерпаны. Ждем 30 сек...")
-    time.sleep(30)
     return None

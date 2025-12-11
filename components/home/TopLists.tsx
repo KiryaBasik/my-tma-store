@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, MouseEvent } from "react";
+import { useState, useRef, MouseEvent } from "react";
 import { ChevronRight, Star, PlusCircle, Rocket, Download } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -45,21 +45,32 @@ export default function TopAppsOfDay({ initialApps, dict }: TopListsProps) {
   if (safeApps.length === 0) return null;
 
   return (
-    <section className="relative py-12 z-20">
-      <div className="flex items-center justify-between mb-8 relative z-10 px-6">
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white drop-shadow-sm flex items-center gap-3">
-          <Rocket className="text-blue-500" />
+    <section className="relative py-8 md:py-12 z-20">
+      {/* ИЗМЕНЕНИЯ В ЗАГОЛОВКЕ:
+          1. flex-col для мобилок, md:flex-row для ПК
+          2. items-start для мобилок, md:items-center для ПК
+          3. gap-4 для отступа между заголовком и кнопкой
+      */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 md:mb-8 relative z-10 px-4 md:px-6">
+        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white drop-shadow-sm flex items-center gap-3">
+          <Rocket className="text-blue-500 w-6 h-6 md:w-8 md:h-8" />
           {dict?.topApps?.title || "Top Apps"}
         </h2>
+
+        {/* Кнопка на мобильном растягивается или прижимается влево */}
         <Link
           href="/categories"
-          className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-white/80 hover:text-black dark:hover:text-white transition bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 backdrop-blur-md px-4 py-2 rounded-full"
+          className="flex items-center justify-center md:justify-start gap-2 text-sm font-bold text-gray-600 dark:text-white/80 hover:text-black dark:hover:text-white transition bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 backdrop-blur-md px-5 py-3 md:py-2 rounded-xl md:rounded-full w-full md:w-auto"
         >
           {dict?.topApps?.viewAll || "View All"} <ChevronRight size={18} />
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10 px-2">
+      {/* ИЗМЕНЕНИЯ В СЕТКЕ:
+          1. gap-4 для мобилок (было gap-6 везде)
+          2. px-4 для мобилок
+      */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 relative z-10 px-4 md:px-2">
         {gridItems.map((item, idx) => {
           if (item.type === "app") {
             return (
@@ -91,9 +102,8 @@ function AppCard({ app, getIconUrl, userLabel }: any) {
   const cleanUsername = app.username ? app.username.replace("@", "") : "#";
 
   return (
-    // ВАЖНО: Убрали Link с обертки, заменили на div
-    <div className="group relative h-full bg-white/80 dark:bg-[#1a1d24]/80 backdrop-blur-xl border border-gray-200 dark:border-white/5 rounded-3xl p-5 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl dark:hover:shadow-black/50 hover:border-blue-500/30 cursor-pointer overflow-hidden flex flex-col min-h-[220px]">
-      {/* 1. ССЫЛКА НА SINGLE PAGE (Растянута на всю карточку, z-10) */}
+    // Уменьшили padding на мобильных p-4, на ПК p-5
+    <div className="group relative h-full bg-white/80 dark:bg-[#1a1d24]/80 backdrop-blur-xl border border-gray-200 dark:border-white/5 rounded-3xl p-4 md:p-5 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl dark:hover:shadow-black/50 hover:border-blue-500/30 cursor-pointer overflow-hidden flex flex-col min-h-[200px] md:min-h-[220px]">
       <Link href={`/app/${cleanUsername}`} className="absolute inset-0 z-10">
         <span className="sr-only">View App</span>
       </Link>
@@ -101,7 +111,7 @@ function AppCard({ app, getIconUrl, userLabel }: any) {
       <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
       <div className="flex items-start justify-between mb-4 relative z-20 pointer-events-none">
-        <div className="w-16 h-16 rounded-2xl shadow-lg flex items-center justify-center bg-secondary text-2xl rotate-3 group-hover:rotate-6 transition-transform overflow-hidden relative">
+        <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl shadow-lg flex items-center justify-center bg-secondary text-2xl rotate-3 group-hover:rotate-6 transition-transform overflow-hidden relative">
           {app.icon ? (
             <Image
               src={getIconUrl(app.icon)}
@@ -115,7 +125,6 @@ function AppCard({ app, getIconUrl, userLabel }: any) {
           )}
         </div>
 
-        {/* 2. КНОПКА OPEN (Поверх всего, z-30, pointer-events-auto) */}
         <a
           href={app.telegram_url}
           target="_blank"
@@ -126,7 +135,6 @@ function AppCard({ app, getIconUrl, userLabel }: any) {
         </a>
       </div>
 
-      {/* Контент (кликабельность пробивает до Link z-10) */}
       <div className="relative z-0 flex flex-col flex-grow">
         <div className="mb-2">
           <span className="bg-gray-100 dark:bg-white/5 px-2 py-1 rounded-lg text-[10px] font-bold text-gray-500 dark:text-white/50 uppercase tracking-wider">
@@ -134,7 +142,7 @@ function AppCard({ app, getIconUrl, userLabel }: any) {
           </span>
         </div>
 
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors truncate">
+        <h3 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors truncate">
           {app.title}
         </h3>
 
@@ -155,7 +163,6 @@ function AppCard({ app, getIconUrl, userLabel }: any) {
   );
 }
 
-// ... ParallaxCard и PromoCard остаются без изменений ...
 function ParallaxCard() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -205,6 +212,9 @@ function ParallaxCard() {
 }
 
 function PromoCard() {
+  // На мобильных скрываем промо-карточку, если она ломает сетку или выглядит плохо
+  // Но пока оставляем видимой (hidden lg:block выше в логике gridItems управляет видимостью)
+  // В основном коде PromoCard видна только на >= lg (в GridItems logic)
   return (
     <div className="relative h-full bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-[2.5rem] p-8 flex flex-col justify-between overflow-hidden group shadow-lg hover:shadow-blue-600/20 transition-all duration-300 hover:-translate-y-1">
       <div className="absolute -right-6 -bottom-6 w-32 h-32 opacity-20 rotate-12 group-hover:rotate-0 transition-all duration-500">
