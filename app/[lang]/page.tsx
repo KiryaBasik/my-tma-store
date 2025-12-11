@@ -12,7 +12,6 @@ async function fetchAPI(endpoint: string) {
     });
 
     if (!res.ok) {
-      // Если ошибка API, возвращаем пустые объекты
       return endpoint.includes("stats") ? { total: 0, chart: [] } : [];
     }
 
@@ -21,7 +20,6 @@ async function fetchAPI(endpoint: string) {
     if (data && data.results && Array.isArray(data.results)) {
       return data.results;
     }
-    // Если это статистика (объект), возвращаем как есть
     if (endpoint.includes("stats")) {
       return data;
     }
@@ -42,29 +40,40 @@ export default async function Home({
 }) {
   const { lang } = await params;
 
-  // Запрашиваем ВСЕ данные (включая новую статистику)
   const [heroApps, topApps, weeklyApps, newsData, statsData, dict] =
     await Promise.all([
       fetchAPI(`hero/?lang=${lang}`),
       fetchAPI(`apps/?lang=${lang}`),
       fetchAPI(`weekly/?lang=${lang}`),
       fetchAPI(`news/?lang=${lang}`),
-      fetchAPI(`stats/`), // <--- ЗАПРОС К НОВОМУ API
+      fetchAPI(`stats/`),
       getDictionary(lang),
     ]);
 
   return (
-    <div className="space-y-16">
-      {/* ИСПРАВЛЕНИЕ ОШИБКИ: Передаем dict и lang */}
-      <HeroSection apps={heroApps} dict={dict} lang={lang} />
+    <div className="relative">
+      {/* 1. HERO БЛОК (STICKY) 
+          Он "прилипает" к верху и остается на месте, пока его не перекроют.
+          z-0 - чтобы быть на нижнем слое.
+      */}
+      <div className="sticky top-0 z-0 min-h-[95vh] flex flex-col justify-center pt-20 pb-10">
+        <HeroSection apps={heroApps} dict={dict} lang={lang} />
+      </div>
 
-      <TopLists initialApps={topApps} dict={dict} />
-
-      {/* ПЕРЕДАЕМ statsData В КОМПОНЕНТ */}
-      <StatsSection dict={dict} stats={statsData} />
-
-      <TrendingGrid initialApps={weeklyApps} dict={dict} />
-      <NewsSection news={newsData} dict={dict} />
+      {/* 2. ОСТАЛЬНОЙ КОНТЕНТ (ШТОРКА)
+          relative z-10 - слой выше Hero.
+          bg-background - непрозрачный фон, чтобы закрыть Hero.
+          rounded-t-[3rem] - закругление сверху для красивого стыка.
+          shadow - тень, чтобы отделить слои.
+      */}
+      <div className="relative z-10 bg-background rounded-t-[3rem] border-t border-gray-200 dark:border-white/5 shadow-[0_-20px_60px_rgba(0,0,0,0.5)]">
+        <div className="space-y-24 py-20">
+          <TopLists initialApps={topApps} dict={dict} />
+          <StatsSection dict={dict} stats={statsData} />
+          <TrendingGrid initialApps={weeklyApps} dict={dict} />
+          <NewsSection news={newsData} dict={dict} />
+        </div>
+      </div>
     </div>
   );
 }

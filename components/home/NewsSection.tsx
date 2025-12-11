@@ -9,9 +9,8 @@ import {
   ExternalLink,
 } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link"; // <--- 1. Импортируем Link
+import Link from "next/link";
 
-// Цвета для карточек (будут присваиваться по очереди)
 const GRADIENTS = [
   "from-red-500 to-orange-500",
   "from-blue-500 to-cyan-500",
@@ -47,9 +46,26 @@ export default function NewsSection({
     }
   };
 
+  // --- ИСПРАВЛЕННАЯ ФУНКЦИЯ ОЧИСТКИ ТЕКСТА ---
   const stripHtml = (html: string) => {
     if (!html) return "";
-    return html.replace(/<[^>]*>?/gm, "").slice(0, 120) + "...";
+
+    // 1. Убираем HTML теги
+    let text = html.replace(/<[^>]*>?/gm, "");
+
+    // 2. Заменяем HTML-сущности на нормальные символы
+    text = text
+      .replace(/&nbsp;/g, " ")
+      .replace(/&amp;/g, "&")
+      .replace(/&quot;/g, '"')
+      .replace(/&apos;/g, "'")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&mdash;/g, "—")
+      .replace(/&ndash;/g, "–");
+
+    // 3. Обрезаем и добавляем троеточие
+    return text.length > 120 ? text.slice(0, 120) + "..." : text;
   };
 
   if (!dict) return null;
@@ -57,7 +73,6 @@ export default function NewsSection({
 
   return (
     <section className="relative py-8">
-      {/* Заголовок */}
       <div className="flex items-center justify-between mb-8 px-6">
         <div>
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
@@ -85,7 +100,6 @@ export default function NewsSection({
         </div>
       </div>
 
-      {/* Карусель */}
       <div
         ref={scrollRef}
         className="flex gap-6 overflow-x-auto pb-8 pt-2 px-6 snap-x snap-mandatory scrollbar-hide"
@@ -95,7 +109,6 @@ export default function NewsSection({
           const gradient = GRADIENTS[index % GRADIENTS.length];
 
           return (
-            // 2. Оборачиваем article в Link
             <Link
               href={`/news/${item.id}`}
               key={item.id}
@@ -143,6 +156,7 @@ export default function NewsSection({
                       {item.title}
                     </h3>
 
+                    {/* ТУТ ИСПОЛЬЗУЕМ ОБНОВЛЕННУЮ ФУНКЦИЮ */}
                     <p className="text-gray-500 dark:text-gray-400 text-sm line-clamp-2 mb-6 flex-1">
                       {stripHtml(item.content)}
                     </p>

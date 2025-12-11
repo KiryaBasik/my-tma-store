@@ -23,10 +23,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-p)c33wy8=xt86nu@w%mg^te2gfbm$$g!bf(%8&hlaox^6()-0('
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['nidium.com', 'www.nidium.com', '155.212.219.98', 'localhost', '127.0.0.1']
 
 # Application definition
 
@@ -127,8 +126,18 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
+    "https://nidium.com",
+    "https://www.nidium.com",
+    "http://nidium.com",
+    "http://www.nidium.com",
 ]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://nidium.com",
+    "https://www.nidium.com",
+]
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 # URL для доступа к медиа-файлам в браузере
 MEDIA_URL = '/media/'
 

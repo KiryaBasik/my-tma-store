@@ -3,21 +3,22 @@ import "server-only";
 const dictionaries = {
   en: {
     navigation: {
+      home: "Home", // Добавлено
       categories: "Categories",
-      marketplace: "Marketplace",
-      ads: "Ads",
-      sensor: "Sensor",
+      // marketplace: "Marketplace", // Убрано
+      ads: "Ads & Promo",
       submit: "+ Submit",
     },
+    // ... существующие секции hero, topApps, stats, trending, news, footer ...
     hero: {
       featured: "Featured #1",
       welcome: "Welcome",
       launch: "Launch App",
       more: "More Details",
-      trending: "Trending", // Новое
-      category: "Category", // Новое
-      users: "Users", // Новое
-      rating: "Rating", // Новое
+      trending: "Trending",
+      category: "Category",
+      users: "Users",
+      rating: "Rating",
     },
     topApps: {
       title: "Top Apps of the Day",
@@ -57,7 +58,6 @@ const dictionaries = {
         "Experience the full power of our catalog directly inside Telegram.",
       openTg: "Open in Telegram",
       rights: "All rights reserved.",
-      // Списки ссылок
       extrasLinks: [
         "FindMini X (Twitter)",
         "Publications",
@@ -80,13 +80,59 @@ const dictionaries = {
       searchPlaceholder: "Search apps...",
       empty: "No categories found.",
     },
+    // НОВАЯ СЕКЦИЯ ДЛЯ СТРАНИЦЫ РЕКЛАМЫ
+    adsPage: {
+      hero: {
+        badge: "Boost Your Growth",
+        title: "Dominate the TMA Market",
+        subtitle:
+          "Get your app featured in front of millions of active users. The most effective way to skyrocket your traffic.",
+        cta: "Start Campaign",
+      },
+      sticky: {
+        title: "Why advertise with us?",
+        subtitle:
+          "We provide not just traffic, but engaged users ready to use your product.",
+      },
+      benefits: [
+        {
+          title: "Homepage Hero",
+          desc: "Your app in the main spotlight. 100% visibility for every visitor.",
+          stat: "500k+",
+          statLabel: "Daily Impressions",
+        },
+        {
+          title: "Targeted Category",
+          desc: "Be the #1 choice in your specific niche (DeFi, Games, Tools).",
+          stat: "15%",
+          statLabel: "Higher Conversion",
+        },
+        {
+          title: "Social Blast",
+          desc: "Mentions in our Telegram channel and Twitter community.",
+          stat: "1M+",
+          statLabel: "Audience Reach",
+        },
+        {
+          title: "Search Priority",
+          desc: "Always appear first when users search for keywords.",
+          stat: "TOP 1",
+          statLabel: "Search Rank",
+        },
+      ],
+      contact: {
+        title: "Ready to scale?",
+        subtitle: "Contact me via Telegram to discuss custom packages.",
+        btn: "Contact",
+      },
+    },
   },
   ru: {
     navigation: {
+      home: "Главная", // Добавлено
       categories: "Категории",
-      marketplace: "Маркет",
+      // marketplace: "Маркет", // Убрано
       ads: "Реклама",
-      sensor: "Сенсор",
       submit: "+ Добавить",
     },
     hero: {
@@ -94,10 +140,10 @@ const dictionaries = {
       welcome: "Добро пожаловать",
       launch: "Запустить",
       more: "Подробнее",
-      trending: "В тренде", // Новое
-      category: "Категория", // Новое
-      users: "Польз.", // Новое
-      rating: "Рейтинг", // Новое
+      trending: "В тренде",
+      category: "Категория",
+      users: "Польз.",
+      rating: "Рейтинг",
     },
     topApps: {
       title: "Топ приложений дня",
@@ -108,7 +154,8 @@ const dictionaries = {
       marketPulse: "Рост рынка",
       totalApps: "Всего приложений и ботов",
       submitTitle: "Разработчик или Фаундер?",
-      submitDesc: "Добавьте свое приложение в каталог, чтобы получить трафик и пользователей.",
+      submitDesc:
+        "Добавьте свое приложение в каталог, чтобы получить трафик и пользователей.",
       submitBtn: "Написать и Добавить",
     },
     trending: {
@@ -160,6 +207,53 @@ const dictionaries = {
         "Условия использования",
         "Отказ от ответственности",
       ],
+    },
+    // НОВАЯ СЕКЦИЯ (RU)
+    adsPage: {
+      hero: {
+        badge: "Ускорь свой рост",
+        title: "Доминируй на рынке TMA",
+        subtitle:
+          "Покажи свой проект миллионам активных пользователей. Самый эффективный способ взвинтить трафик.",
+        cta: "Запустить кампанию",
+      },
+      sticky: {
+        title: "Почему мы?",
+        subtitle:
+          "Мы даем не просто клики, а вовлеченную аудиторию, готовую использовать ваш продукт.",
+      },
+      benefits: [
+        {
+          title: "Hero Баннер",
+          desc: "Ваше приложение на главном экране. 100% видимость для каждого посетителя.",
+          stat: "500k+",
+          statLabel: "Показов в сутки",
+        },
+        {
+          title: "Лидер категории",
+          desc: "Станьте выбором №1 в своей нише (DeFi, Игры, Утилиты).",
+          stat: "15%",
+          statLabel: "Рост конверсии",
+        },
+        {
+          title: "Социальный взрыв",
+          desc: "Упоминания в нашем Telegram канале и сообществе в Twitter.",
+          stat: "1M+",
+          statLabel: "Охват аудитории",
+        },
+        {
+          title: "Поиск в топе",
+          desc: "Всегда появляйтесь первыми, когда пользователи ищут ключевые слова.",
+          stat: "ТОП 1",
+          statLabel: "В поиске",
+        },
+      ],
+      contact: {
+        title: "Готовы масштабироваться?",
+        subtitle:
+          "Свяжитесь со мной в Telegram для обсуждения индивидуальных условий.",
+        btn: "Написать мне",
+      },
     },
   },
 };

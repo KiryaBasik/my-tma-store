@@ -2,6 +2,7 @@
 
 import { useState, useRef, MouseEvent } from "react";
 import { ArrowUpRight, Trophy, Download, Star } from "lucide-react";
+import Link from "next/link"; // Импортируем Link
 
 interface AppData {
   id: number;
@@ -11,10 +12,11 @@ interface AppData {
   users_count: string;
   description: string;
   icon: string;
+  username: string; // Добавили username для ссылок
+  telegram_url: string; // Добавили URL для запуска
   is_weekly: boolean;
 }
 
-// Принимаем dict
 export default function WeeklyFeatured({
   initialApps,
   dict,
@@ -39,7 +41,7 @@ export default function WeeklyFeatured({
   const getIconUrl = (url: string) => {
     if (!url) return null;
     if (url.startsWith("http")) return url;
-    return `http://localhost:8000${url}`; // Было 127.0.0.1
+    return `http://localhost:8000${url}`;
   };
 
   if (!initialApps || initialApps.length === 0 || !dict) {
@@ -72,18 +74,26 @@ export default function WeeklyFeatured({
         className="relative grid grid-cols-1 md:grid-cols-3 gap-4"
       >
         <div
-          className="pointer-events-none absolute -inset-px transition opacity-500"
+          className="pointer-events-none absolute -inset-px transition opacity-500 z-0"
           style={{
             opacity,
             background: `radial-gradient(600px circle at ${position.x}px ${position.y}px, rgba(59, 130, 246, 0.15), transparent 40%)`,
           }}
         />
 
-        {/* БОЛЬШАЯ КАРТОЧКА (#1) */}
-        <div className="md:col-span-2 relative group overflow-hidden rounded-[2rem] bg-gray-100 dark:bg-[#1a1d24] border border-gray-200 dark:border-white/5 p-8 flex flex-col justify-between min-h-[400px]">
+        {/* --- БОЛЬШАЯ КАРТОЧКА (#1) --- */}
+        <div className="md:col-span-2 relative group overflow-hidden rounded-[2rem] bg-gray-100 dark:bg-[#1a1d24] border border-gray-200 dark:border-white/5 p-8 flex flex-col justify-between min-h-[400px] hover:border-blue-500/30 transition-colors">
+          {/* ССЫЛКА НА SINGLE PAGE (ВЕСЬ БЛОК КЛИКАБЕЛЕН) */}
+          <Link
+            href={`/app/${mainApp.username?.replace("@", "")}`}
+            className="absolute inset-0 z-10"
+          >
+            <span className="sr-only">View Details</span>
+          </Link>
+
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-          <div className="relative z-10 flex items-start justify-between">
+          <div className="relative z-20 flex items-start justify-between pointer-events-none">
             <div className="flex flex-col gap-4">
               <span className="w-fit px-3 py-1 rounded-full bg-white dark:bg-white/10 text-xs font-bold uppercase tracking-wider text-gray-900 dark:text-white border border-gray-200 dark:border-white/5 shadow-sm">
                 #1 {dict.editorChoice}
@@ -97,18 +107,27 @@ export default function WeeklyFeatured({
             </div>
           </div>
 
-          <div className="relative z-10 mt-8 flex items-center gap-4">
-            <button className="flex items-center gap-2 bg-gray-900 dark:bg-white text-white dark:text-black px-6 py-3 rounded-xl font-bold hover:scale-105 transition-transform active:scale-95 shadow-lg shadow-blue-500/20">
+          <div className="relative z-30 mt-8 flex items-center gap-4">
+            {/* КНОПКА ЗАПУСКА (ОТДЕЛЬНАЯ ССЫЛКА) */}
+            <a
+              href={mainApp.telegram_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 bg-gray-900 dark:bg-white text-white dark:text-black px-6 py-3 rounded-xl font-bold hover:scale-105 transition-transform active:scale-95 shadow-lg shadow-blue-500/20 cursor-pointer"
+              onClick={(e) => e.stopPropagation()} // Чтобы не сработал клик по карточке
+            >
               <Download size={20} />
               {dict.install}
-            </button>
-            <div className="flex items-center gap-1 text-sm font-bold text-gray-500 dark:text-gray-400">
+            </a>
+
+            <div className="flex items-center gap-1 text-sm font-bold text-gray-500 dark:text-gray-400 pointer-events-none">
               <Star className="text-yellow-400 fill-yellow-400" size={16} />
               {mainApp.rating} {dict.rating}
             </div>
           </div>
 
-          <div className="absolute right-[-20px] bottom-[-20px] md:right-[-40px] md:bottom-[-40px] w-64 h-64 md:w-96 md:h-96 rotate-[-12deg] group-hover:rotate-[-6deg] group-hover:scale-105 transition-all duration-500 ease-out z-0 opacity-90 blur-sm group-hover:blur-0">
+          {/* Картинка (Декор) */}
+          <div className="absolute right-[-20px] bottom-[-20px] md:right-[-40px] md:bottom-[-40px] w-64 h-64 md:w-96 md:h-96 rotate-[-12deg] group-hover:rotate-[-6deg] group-hover:scale-105 transition-all duration-500 ease-out z-0 opacity-90 blur-sm group-hover:blur-0 pointer-events-none">
             <div className="w-full h-full rounded-[3rem] shadow-2xl overflow-hidden bg-gray-800 flex items-center justify-center">
               {mainApp.icon ? (
                 <img
@@ -125,14 +144,22 @@ export default function WeeklyFeatured({
           </div>
         </div>
 
-        {/* СПИСОК ОСТАЛЬНЫХ */}
+        {/* --- СПИСОК ОСТАЛЬНЫХ --- */}
         <div className="grid grid-cols-1 gap-4 h-full">
           {otherApps.map((app) => (
             <div
               key={app.id}
-              className="relative group bg-white dark:bg-[#1a1d24] border border-gray-200 dark:border-white/5 rounded-[1.5rem] p-5 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer"
+              className="relative group bg-white dark:bg-[#1a1d24] border border-gray-200 dark:border-white/5 rounded-[1.5rem] p-5 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-white/5 transition-colors hover:border-blue-500/20"
             >
-              <div className="flex items-center gap-4">
+              {/* Ссылка на сингл (вся карточка) */}
+              <Link
+                href={`/app/${app.username?.replace("@", "")}`}
+                className="absolute inset-0 z-10"
+              >
+                <span className="sr-only">Details</span>
+              </Link>
+
+              <div className="flex items-center gap-4 relative z-0 pointer-events-none">
                 <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-md group-hover:scale-110 transition-transform bg-gray-800 flex items-center justify-center text-white">
                   {app.icon ? (
                     <img
@@ -162,9 +189,16 @@ export default function WeeklyFeatured({
                 </div>
               </div>
 
-              <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center text-gray-400 dark:text-gray-500 group-hover:bg-blue-500 group-hover:text-white transition-all">
+              {/* Кнопка запуска (отдельная ссылка) */}
+              <a
+                href={app.telegram_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="w-10 h-10 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center text-gray-400 dark:text-gray-500 group-hover:bg-blue-500 group-hover:text-white transition-all relative z-20 cursor-pointer"
+              >
                 <ArrowUpRight size={20} />
-              </div>
+              </a>
             </div>
           ))}
         </div>

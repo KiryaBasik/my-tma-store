@@ -1,11 +1,28 @@
 "use client";
 
 import Link from "next/link";
-import { Plus, QrCode, Smartphone } from "lucide-react";
+import { Plus, QrCode, Smartphone, Send } from "lucide-react";
 
-// Принимаем словарь как пропс
-export default function Footer({ dict }: { dict: any }) {
-  if (!dict) return null;
+// Обновленный интерфейс пропсов
+export default function Footer({
+  footerDict,
+  navDict,
+  lang,
+}: {
+  footerDict: any;
+  navDict: any;
+  lang: string;
+}) {
+  if (!footerDict || !navDict) return null;
+
+  // Формируем ссылки для колонки "Дополнительно" на основе навигации
+  const extraLinks = [
+    { label: navDict.home, href: `/${lang}` },
+    { label: navDict.categories, href: `/${lang}/categories` },
+    { label: navDict.ads, href: `/${lang}/ads` },
+  ];
+
+  const contactLink = "https://t.me/monovitskiyds"; // Твой контакт для всех кнопок
 
   return (
     <footer className="relative z-10 border-t border-border bg-background transition-colors duration-300 pt-10 pb-8 md:pt-16">
@@ -23,45 +40,59 @@ export default function Footer({ dict }: { dict: any }) {
             </div>
 
             <p className="text-gray-500 dark:text-gray-400 leading-relaxed text-sm md:text-base">
-              {dict.description}
+              {footerDict.description}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3">
-              <button className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-secondary hover:bg-secondary/80 text-foreground text-sm font-bold border border-border transition active:scale-95">
-                <Plus size={16} /> {dict.addApp}
-              </button>
-              <button className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-transparent hover:bg-secondary text-gray-500 hover:text-foreground text-sm font-bold border border-border transition active:scale-95">
-                {dict.addBusiness}
-              </button>
+              {/* КНОПКА 1: Добавить приложение -> ТГ */}
+              <a
+                href={contactLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-secondary hover:bg-secondary/80 text-foreground text-sm font-bold border border-border transition active:scale-95"
+              >
+                <Plus size={16} /> {footerDict.addApp}
+              </a>
+
+              {/* КНОПКА 2: Для бизнеса -> ТГ */}
+              <a
+                href={contactLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-transparent hover:bg-secondary text-gray-500 hover:text-foreground text-sm font-bold border border-border transition active:scale-95"
+              >
+                {footerDict.addBusiness}
+              </a>
             </div>
           </div>
 
-          {/* 2. Ссылки (По центру) 
-              НА МОБИЛЬНЫХ: Встают в 2 колонки рядом (grid-cols-2)
-              НА ПК: Занимают 5 колонок общей сетки
-          */}
+          {/* 2. Ссылки (По центру) */}
           <div className="lg:col-span-5 grid grid-cols-2 gap-4 sm:gap-8">
+            {/* Дополнительно (Главная, Категории, Реклама) */}
             <div className="flex flex-col gap-4 md:gap-6">
-              <h4 className="font-bold text-foreground">{dict.extras}</h4>
+              <h4 className="font-bold text-foreground">{footerDict.extras}</h4>
               <ul className="flex flex-col gap-3 text-sm text-gray-500 dark:text-gray-400">
-                {dict.extrasLinks.map((link: string, i: number) => (
+                {extraLinks.map((item, i) => (
                   <li key={i}>
                     <Link
-                      href="#"
+                      href={item.href}
                       className="hover:text-blue-500 transition-colors flex items-center gap-2 group"
                     >
                       <span className="w-1.5 h-1.5 rounded-full bg-transparent group-hover:bg-blue-500 transition-colors" />
-                      {link}
+                      {item.label}
                     </Link>
                   </li>
                 ))}
               </ul>
             </div>
 
+            {/* Бизнесу (оставляем старые ссылки или меняем на #) */}
             <div className="flex flex-col gap-4 md:gap-6">
-              <h4 className="font-bold text-foreground">{dict.forBusiness}</h4>
+              <h4 className="font-bold text-foreground">
+                {footerDict.forBusiness}
+              </h4>
               <ul className="flex flex-col gap-3 text-sm text-gray-500 dark:text-gray-400">
-                {dict.businessLinks.map((item: string, i: number) => (
+                {footerDict.businessLinks.map((item: string, i: number) => (
                   <li key={i}>
                     <Link
                       href="#"
@@ -85,21 +116,27 @@ export default function Footer({ dict }: { dict: any }) {
                 </div>
                 <div className="text-right">
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">
-                    {dict.scan}
+                    {footerDict.scan}
                   </p>
                   <p className="text-sm font-bold text-foreground">
-                    {dict.appTitle}
+                    {footerDict.appTitle}
                   </p>
                 </div>
               </div>
 
               <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed mb-4 relative z-10 pr-2">
-                {dict.scanDesc}
+                {footerDict.scanDesc}
               </p>
 
-              <button className="relative z-10 w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg transition shadow-lg shadow-blue-500/20 active:scale-95">
-                {dict.openTg}
-              </button>
+              {/* КНОПКА ОТКРЫТЬ В ТЕЛЕГРАМ */}
+              <a
+                href={contactLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-center relative z-10 w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg transition shadow-lg shadow-blue-500/20 active:scale-95"
+              >
+                {footerDict.openTg}
+              </a>
 
               <div className="absolute -bottom-12 -right-6 text-gray-200 dark:text-white/5 opacity-50 rotate-12 group-hover:rotate-6 group-hover:-translate-y-2 transition-transform duration-500 pointer-events-none">
                 <Smartphone size={140} strokeWidth={1} />
@@ -111,10 +148,10 @@ export default function Footer({ dict }: { dict: any }) {
         {/* 4. Нижняя панель (Копирайт) */}
         <div className="border-t border-border pt-6 md:pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-400 text-center md:text-left">
           <p className="order-2 md:order-1">
-            &copy; 2025 FindMini Clone. {dict.rights}
+            &copy; 2025 FindMini Clone. {footerDict.rights}
           </p>
           <div className="flex flex-wrap justify-center gap-4 md:gap-6 order-1 md:order-2">
-            {dict.bottomLinks.map((link: string, i: number) => (
+            {footerDict.bottomLinks.map((link: string, i: number) => (
               <Link
                 key={i}
                 href="#"

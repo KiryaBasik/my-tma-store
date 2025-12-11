@@ -1,7 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Calendar, Clock, Share2, Tag } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, Tag } from "lucide-react";
 import { notFound } from "next/navigation";
+import NewsShareButton from "@/components/NewsShareButton"; // <--- ИМПОРТ
 
 // --- ФУНКЦИИ ЗАГРУЗКИ ---
 
@@ -65,7 +66,6 @@ export default async function NewsPage({
     : [];
 
   return (
-    // ИСПРАВЛЕНИЕ: Убрали overflow-x-hidden, чтобы работал sticky
     <div className="min-h-screen pb-20">
       {/* Прогресс-бар */}
       <div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-purple-500 z-50 origin-left scale-x-0 animate-scroll-progress" />
@@ -82,8 +82,7 @@ export default async function NewsPage({
       </div>
 
       <div className="max-w-[1200px] mx-auto px-5 md:px-10 grid grid-cols-1 lg:grid-cols-12 gap-12">
-        {/* ЛЕВАЯ КОЛОНКА: Контент (8 колонок) */}
-        {/* min-w-0 по-прежнему нужен для защиты от распирания текстом */}
+        {/* ЛЕВАЯ КОЛОНКА: Контент */}
         <div className="lg:col-span-8 min-w-0">
           {/* Заголовок и мета */}
           <div className="mb-8">
@@ -137,20 +136,22 @@ export default async function NewsPage({
             <div dangerouslySetInnerHTML={{ __html: post.content }} />
           </article>
 
-          {/* Кнопки шеринга */}
+          {/* Кнопки шеринга (ИСПРАВЛЕНО) */}
           <div className="mt-12 pt-8 border-t border-gray-200 dark:border-white/10 flex items-center justify-between">
             <span className="font-bold text-gray-900 dark:text-white">
               {lang === "ru" ? "Понравилось? Поделись:" : "Share this article:"}
             </span>
             <div className="flex gap-2">
-              <button className="p-3 rounded-full bg-blue-500 text-white hover:bg-blue-600 transition">
-                <Share2 size={20} />
-              </button>
+              {/* Используем клиентский компонент */}
+              <NewsShareButton
+                title={post.title}
+                text={lang === "ru" ? "Поделиться" : "Share"}
+              />
             </div>
           </div>
         </div>
 
-        {/* ПРАВАЯ КОЛОНКА: Сайдбар (4 колонки) */}
+        {/* ПРАВАЯ КОЛОНКА: Сайдбар */}
         <div className="lg:col-span-4 relative min-w-0">
           <div className="sticky top-24 space-y-8">
             {/* Блок "Читать также" */}
@@ -199,7 +200,7 @@ export default async function NewsPage({
               </div>
             </div>
 
-            {/* Промо блок */}
+            {/* Промо блок (ИСПРАВЛЕНО: ССЫЛКА НА ТГ) */}
             <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-indigo-600 to-purple-700 p-8 text-white shadow-lg group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 blur-[40px] rounded-full pointer-events-none" />
               <h3 className="text-2xl font-bold mb-2 relative z-10">
@@ -208,9 +209,14 @@ export default async function NewsPage({
               <p className="text-indigo-100 text-sm mb-6 relative z-10">
                 Get 1M+ views on our platform.
               </p>
-              <button className="w-full py-3 bg-white text-indigo-900 font-bold rounded-xl hover:bg-indigo-50 transition shadow-lg active:scale-95 relative z-10">
+              <a
+                href="https://t.me/monovitskiyds"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full text-center py-3 bg-white text-indigo-900 font-bold rounded-xl hover:bg-indigo-50 transition shadow-lg active:scale-95 relative z-10"
+              >
                 Submit Now
-              </button>
+              </a>
             </div>
           </div>
         </div>
