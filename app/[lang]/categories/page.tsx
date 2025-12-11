@@ -7,7 +7,7 @@ async function getCategories(lang: string) {
   try {
     // ИСПРАВЛЕНИЕ: 127.0.0.1 -> localhost
     const res = await fetch(
-      `http://localhost:8000/api/categories/?lang=${lang}`,
+      `http://155.212.219.98/api/categories/?lang=${lang}`,
       {
         cache: "no-store",
       }

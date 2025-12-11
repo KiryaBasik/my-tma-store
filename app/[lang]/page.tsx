@@ -7,7 +7,7 @@ import { getDictionary } from "../dictionaries";
 
 async function fetchAPI(endpoint: string) {
   try {
-    const res = await fetch(`http://localhost:8000/api/${endpoint}`, {
+    const res = await fetch(`http://155.212.219.98/api/${endpoint}`, {
       cache: "no-store",
     });
 

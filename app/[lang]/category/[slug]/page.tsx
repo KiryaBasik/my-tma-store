@@ -5,7 +5,7 @@ import Image from "next/image";
 async function getSubCategoryData(slug: string, lang: string) {
   try {
     const res = await fetch(
-      `http://localhost:8000/api/subcategory/${slug}/?lang=${lang}`,
+      `http://155.212.219.98/api/subcategory/${slug}/?lang=${lang}`,
       {
         next: { revalidate: 60 },
       }
@@ -82,7 +82,7 @@ export default async function SubCategoryPage({
                     src={
                       app.icon.startsWith("http")
                         ? app.icon
-                        : `http://localhost:8000${app.icon}`
+                        : `http://155.212.219.98${app.icon}`
                     }
                     alt={app.title}
                     fill

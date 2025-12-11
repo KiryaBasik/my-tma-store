@@ -1,12 +1,20 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  devIndicators: {
-    appIsrStatus: false,
-    buildActivity: false,
-  },
   images: {
     remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "155.212.219.98",
+        port: "",
+        pathname: "/media/**",
+      },
+      {
+        protocol: "http",
+        hostname: "155.212.219.98",
+        port: "8000",
+        pathname: "/media/**",
+      },
       {
         protocol: "https",
         hostname: "nidium.com",
@@ -17,12 +25,6 @@ const nextConfig: NextConfig = {
         protocol: "http",
         hostname: "nidium.com",
         port: "",
-        pathname: "/media/**",
-      },
-      {
-        protocol: "http",
-        hostname: "155.212.219.98",
-        port: "8000",
         pathname: "/media/**",
       },
       {

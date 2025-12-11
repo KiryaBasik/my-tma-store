@@ -3,13 +3,11 @@ import "server-only";
 const dictionaries = {
   en: {
     navigation: {
-      home: "Home", // Добавлено
+      home: "Home",
       categories: "Categories",
-      // marketplace: "Marketplace", // Убрано
       ads: "Ads & Promo",
       submit: "+ Submit",
     },
-    // ... существующие секции hero, topApps, stats, trending, news, footer ...
     hero: {
       featured: "Featured #1",
       welcome: "Welcome",
@@ -24,6 +22,10 @@ const dictionaries = {
       title: "Top Apps of the Day",
       viewAll: "View All",
       users: "users",
+      // Новые ключи для промо-карточки
+      promoTitle: "Want your app here?",
+      promoDesc: "Get featured and reach millions of users daily.",
+      promoBtn: "Contact Us",
     },
     stats: {
       marketPulse: "Market Growth",
@@ -45,32 +47,21 @@ const dictionaries = {
       subtitle: "Trends, guides, and updates from the TMA world",
       read: "Read Article",
     },
-    footer: {
-      description:
-        "Discover curated selection of the best Telegram & TON Mini Apps & Bots.",
-      addApp: "Add your app",
-      addBusiness: "Add business (Free)",
-      extras: "Extras",
-      forBusiness: "For Business",
-      scan: "Scan to Open",
-      appTitle: "FindMini App",
-      scanDesc:
-        "Experience the full power of our catalog directly inside Telegram.",
-      openTg: "Open in Telegram",
-      rights: "All rights reserved.",
-      extrasLinks: [
-        "FindMini X (Twitter)",
-        "Publications",
-        "Top Mini Apps",
-        "Communities for PRO",
-      ],
-      businessLinks: [
-        "Traffic sales & exchange",
-        "Ads network",
-        "Development",
-        "Analytics and tools",
-      ],
-      bottomLinks: ["Privacy Policy", "Terms of Service", "Disclaimer"],
+    // Секция страницы отдельного приложения
+    appPage: {
+      back: "Back",
+      open: "Open App",
+      share: "Share",
+      ratingSub: "Based on affiliate data",
+      users: "Users",
+      languages: "Languages",
+      verified: "Verified",
+      yes: "Yes",
+      no: "No",
+      about: "About this App",
+      popularity: "Popularity",
+      activity: "Last 7 days activity",
+      na: "N/A",
     },
     categories: {
       heroTitle: "Discover Next-Gen Apps",
@@ -80,7 +71,6 @@ const dictionaries = {
       searchPlaceholder: "Search apps...",
       empty: "No categories found.",
     },
-    // НОВАЯ СЕКЦИЯ ДЛЯ СТРАНИЦЫ РЕКЛАМЫ
     adsPage: {
       hero: {
         badge: "Boost Your Growth",
@@ -126,12 +116,40 @@ const dictionaries = {
         btn: "Contact",
       },
     },
+    footer: {
+      description:
+        "Discover curated selection of the best Telegram & TON Mini Apps & Bots.",
+      addApp: "Add your app",
+      addBusiness: "Add business (Free)",
+      extras: "Extras",
+      forBusiness: "For Business",
+      scan: "Scan to Open",
+      appTitle: "FindMini App",
+      scanDesc:
+        "Experience the full power of our catalog directly inside Telegram.",
+      openTg: "Open in Telegram",
+      rights: "All rights reserved.",
+      extrasLinks: [
+        "FindMini X (Twitter)",
+        "Publications",
+        "Top Mini Apps",
+        "Communities for PRO",
+      ],
+      businessLinks: [
+        "Traffic sales & exchange",
+        "Ads network",
+        "Development",
+        "Analytics and tools",
+      ],
+      bottomLinks: ["Privacy Policy", "Terms of Service", "Disclaimer"],
+    },
   },
+
+  // --- RUSSIAN ---
   ru: {
     navigation: {
-      home: "Главная", // Добавлено
+      home: "Главная",
       categories: "Категории",
-      // marketplace: "Маркет", // Убрано
       ads: "Реклама",
       submit: "+ Добавить",
     },
@@ -149,6 +167,10 @@ const dictionaries = {
       title: "Топ приложений дня",
       viewAll: "Смотреть все",
       users: "польз.",
+      // Перевод промо-блока
+      promoTitle: "Хотите попасть сюда?",
+      promoDesc: "Получите фичеринг и охватите миллионы пользователей.",
+      promoBtn: "Связаться с нами",
     },
     stats: {
       marketPulse: "Рост рынка",
@@ -171,6 +193,22 @@ const dictionaries = {
       subtitle: "Тренды, гайды и обновления из мира TMA",
       read: "Читать статью",
     },
+    // Перевод страницы приложения
+    appPage: {
+      back: "Назад",
+      open: "Открыть",
+      share: "Поделиться",
+      ratingSub: "На основе данных",
+      users: "Пользователи",
+      languages: "Языки",
+      verified: "Верифицировано",
+      yes: "Да",
+      no: "Нет",
+      about: "О приложении",
+      popularity: "Популярность",
+      activity: "Активность за 7 дней",
+      na: "Нет данных",
+    },
     categories: {
       heroTitle: "Откройте приложения нового поколения",
       heroSubtitle:
@@ -179,36 +217,6 @@ const dictionaries = {
       searchPlaceholder: "Поиск приложений...",
       empty: "Категории не найдены.",
     },
-    footer: {
-      description: "Откройте для себя лучшие Telegram и TON Mini Apps и боты.",
-      addApp: "Добавить приложение",
-      addBusiness: "Для бизнеса (Бесплатно)",
-      extras: "Дополнительно",
-      forBusiness: "Бизнесу",
-      scan: "Сканируй",
-      appTitle: "Приложение FindMini",
-      scanDesc: "Используйте всю мощь нашего каталога прямо внутри Telegram.",
-      openTg: "Открыть в Telegram",
-      rights: "Все права защищены.",
-      extrasLinks: [
-        "FindMini X (Twitter)",
-        "Публикации",
-        "Топ Mini Apps",
-        "Сообщества для PRO",
-      ],
-      businessLinks: [
-        "Покупка и обмен трафиком",
-        "Рекламная сеть",
-        "Разработка",
-        "Аналитика и инструменты",
-      ],
-      bottomLinks: [
-        "Политика конфиденциальности",
-        "Условия использования",
-        "Отказ от ответственности",
-      ],
-    },
-    // НОВАЯ СЕКЦИЯ (RU)
     adsPage: {
       hero: {
         badge: "Ускорь свой рост",
@@ -254,6 +262,35 @@ const dictionaries = {
           "Свяжитесь со мной в Telegram для обсуждения индивидуальных условий.",
         btn: "Написать мне",
       },
+    },
+    footer: {
+      description: "Откройте для себя лучшие Telegram и TON Mini Apps и боты.",
+      addApp: "Добавить приложение",
+      addBusiness: "Для бизнеса (Бесплатно)",
+      extras: "Дополнительно",
+      forBusiness: "Бизнесу",
+      scan: "Сканируй",
+      appTitle: "Приложение FindMini",
+      scanDesc: "Используйте всю мощь нашего каталога прямо внутри Telegram.",
+      openTg: "Открыть в Telegram",
+      rights: "Все права защищены.",
+      extrasLinks: [
+        "FindMini X (Twitter)",
+        "Публикации",
+        "Топ Mini Apps",
+        "Сообщества для PRO",
+      ],
+      businessLinks: [
+        "Покупка и обмен трафиком",
+        "Рекламная сеть",
+        "Разработка",
+        "Аналитика и инструменты",
+      ],
+      bottomLinks: [
+        "Политика конфиденциальности",
+        "Условия использования",
+        "Отказ от ответственности",
+      ],
     },
   },
 };

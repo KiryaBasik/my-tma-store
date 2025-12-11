@@ -6,7 +6,7 @@ async function searchApps(query: string, lang: string) {
   if (!query) return [];
   try {
     const res = await fetch(
-      `http://localhost:8000/api/search/?q=${encodeURIComponent(
+      `http://155.212.219.98/api/search/?q=${encodeURIComponent(
         query
       )}&lang=${lang}`,
       { cache: "no-store" }
@@ -74,7 +74,7 @@ export default async function SearchPage({
                       src={
                         app.icon.startsWith("http")
                           ? app.icon
-                          : `http://localhost:8000${app.icon}`
+                          : `http://155.212.219.98${app.icon}`
                       }
                       alt={app.title}
                       fill

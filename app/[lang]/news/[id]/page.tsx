@@ -9,7 +9,7 @@ import NewsShareButton from "@/components/NewsShareButton"; // <--- ИМПОРТ
 async function getNewsItem(id: string, lang: string) {
   try {
     const res = await fetch(
-      `http://localhost:8000/api/news/${id}/?lang=${lang}`,
+      `http://155.212.219.98/api/news/${id}/?lang=${lang}`,
       {
         next: { revalidate: 60 },
       }
@@ -23,7 +23,7 @@ async function getNewsItem(id: string, lang: string) {
 
 async function getLatestNews(lang: string) {
   try {
-    const res = await fetch(`http://localhost:8000/api/news/?lang=${lang}`, {
+    const res = await fetch(`http://155.212.219.98/api/news/?lang=${lang}`, {
       next: { revalidate: 60 },
     });
     if (!res.ok) return [];
@@ -110,7 +110,7 @@ export default async function NewsPage({
                 src={
                   post.image.startsWith("http")
                     ? post.image
-                    : `http://localhost:8000${post.image}`
+                    : `http://155.212.219.98${post.image}`
                 }
                 alt={post.title}
                 fill
@@ -175,7 +175,7 @@ export default async function NewsPage({
                             src={
                               item.image.startsWith("http")
                                 ? item.image
-                                : `http://localhost:8000${item.image}`
+                                : `http://155.212.219.98${item.image}`
                             }
                             alt={item.title}
                             fill

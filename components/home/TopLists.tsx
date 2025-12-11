@@ -20,7 +20,7 @@ export default function TopAppsOfDay({ initialApps, dict }: TopListsProps) {
   const getIconUrl = (url: string) => {
     if (!url) return null;
     if (url.startsWith("http")) return url;
-    return `http://localhost:8000${url}`;
+    return `http://155.212.219.98${url}`;
   };
 
   let safeApps =

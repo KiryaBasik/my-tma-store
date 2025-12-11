@@ -124,7 +124,11 @@ export default function NewsSection({
 
                     {item.image ? (
                       <Image
-                        src={item.image}
+			src={
+  			item.image?.startsWith("http")
+    			? item.image
+    			: `http://155.212.219.98${item.image}`
+			}	
                         alt={item.title}
                         fill
                         className="object-cover transition-transform duration-700 group-hover:scale-105"
